@@ -9,7 +9,14 @@
   --accent: #4f8cff;
   --accent-soft: rgba(79, 140, 255, 0.16);
   --accent-2: #22c55e;
+  --success: #22c55e;
+  --success-soft: rgba(34, 197, 94, 0.16);
+  --info: #4f8cff;
+  --info-soft: rgba(79, 140, 255, 0.16);
+  --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.16);
   --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.16);
   --token: #f59e0b;
 }
 
@@ -25,6 +32,9 @@ body,
 }
 
 body {
+  min-width: 1080px;
+  min-height: 600px;
+  overflow: auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
   background: var(--bg);
@@ -35,7 +45,8 @@ body {
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
+  min-height: 600px;
   overflow: hidden;
 }
 
@@ -51,37 +62,42 @@ body {
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: 8px;
+  padding: 8px 12px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.toolbar__section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.toolbar__section--left {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.toolbar__section--middle {
+  flex: 0 0 auto;
+}
+
+.toolbar__section--right {
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .toolbar__brand {
-  font-weight: 600;
-  font-size: 14px;
-  letter-spacing: 0.02em;
-  margin-right: 6px;
-  white-space: nowrap;
-}
-
-.toolbar__group {
-  display: flex;
-  gap: 4px;
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-}
-
-.toolbar__group--right {
-  margin-left: auto;
-}
-
-.toolbar__label {
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
   margin-right: 4px;
 }
 
@@ -90,13 +106,17 @@ body {
   height: 20px;
   background: var(--border);
   margin: 0 4px;
+  flex: 0 0 auto;
 }
+
+/* ---------------- Buttons ---------------- */
 
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 7px 10px;
+  padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--panel-2);
@@ -113,8 +133,15 @@ body {
 }
 
 .btn:disabled {
-  opacity: 0.4;
+  opacity: 0.35;
   cursor: not-allowed;
+}
+
+.btn--icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  flex: 0 0 auto;
 }
 
 .btn.is-active {
@@ -123,27 +150,59 @@ body {
   color: #cddfff;
 }
 
-.btn--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+.btn.is-active.is-danger {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+  color: #ffc9c9;
 }
 
-.btn--primary:hover:not(:disabled) {
-  background: #3a7aec;
+.btn--success {
+  color: var(--success);
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.btn--success:hover:not(:disabled) {
+  background: var(--success-soft);
+  border-color: var(--success);
+}
+
+.btn--info {
+  color: var(--info);
+  border-color: rgba(79, 140, 255, 0.4);
+}
+
+.btn--info:hover:not(:disabled) {
+  background: var(--info-soft);
+  border-color: var(--info);
+}
+
+.btn--warning {
+  color: var(--warning);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.btn--warning:hover:not(:disabled) {
+  background: var(--warning-soft);
+  border-color: var(--warning);
+}
+
+.btn--danger {
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.4);
 }
 
 .btn--danger:hover:not(:disabled) {
+  background: var(--danger-soft);
   border-color: var(--danger);
-  color: #ffc9c9;
 }
 
 /* ---------------- Playground ---------------- */
 
 .playground {
-  flex: 1;
+  flex: 1 1 auto;
   position: relative;
   overflow: hidden;
+  min-width: 0;
   min-height: 0;
 }
 
@@ -177,6 +236,21 @@ body {
   fill: var(--bg);
 }
 
+.playground__zoom {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  z-index: 5;
+}
+
 /* ---------------- Places ---------------- */
 
 .place__circle {
@@ -191,7 +265,7 @@ body {
 }
 
 .node--place.is-source .place__circle {
-  stroke: var(--accent-2);
+  stroke: var(--success);
   stroke-dasharray: 5 4;
 }
 
@@ -217,7 +291,7 @@ body {
 }
 
 .node--transition.is-enabled .transition__bar {
-  fill: var(--accent-2);
+  fill: var(--success);
   stroke: #86efac;
 }
 
@@ -227,7 +301,7 @@ body {
 }
 
 .node--transition.is-source .transition__bar {
-  stroke: var(--accent-2);
+  stroke: var(--success);
   stroke-dasharray: 5 4;
 }
 
@@ -274,7 +348,7 @@ body {
 }
 
 .arc__preview {
-  stroke: var(--accent-2);
+  stroke: var(--success);
   stroke-width: 2;
   stroke-dasharray: 6 5;
   pointer-events: none;
@@ -303,16 +377,28 @@ body {
   user-select: none;
 }
 
-/* ---------------- Sidebar ---------------- */
+/* ---------------- Sidebar + resizer ---------------- */
+
+.resizer {
+  flex: 0 0 4px;
+  width: 4px;
+  cursor: col-resize;
+  background: var(--border);
+  transition: background 0.15s;
+}
+
+.resizer:hover,
+.resizer:active {
+  background: var(--accent);
+}
 
 .sidebar {
-  width: 360px;
-  min-width: 300px;
-  max-width: 460px;
+  flex: 0 0 auto;
   border-left: 1px solid var(--border);
   background: var(--panel);
   overflow-y: auto;
   overflow-x: hidden;
+  min-width: 0;
 }
 
 .sidebar__section {
@@ -361,7 +447,17 @@ body {
   color: var(--text);
   font-family: inherit;
   font-size: 12px;
+  line-height: 1.4;
+}
+
+.field textarea {
   resize: vertical;
+  min-height: 32px;
+}
+
+.sidebar__table textarea {
+  resize: vertical;
+  min-height: 28px;
 }
 
 .field input:focus,
@@ -397,18 +493,24 @@ body {
 }
 
 .cell-label {
+  width: 36px;
+  max-width: 36px;
+  padding: 4px 4px;
   color: var(--text);
   font-weight: 600;
   white-space: nowrap;
-  width: 42px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
 }
 
 .cell-number {
-  width: 68px;
+  width: 62px;
 }
 
 .cell-number input {
   text-align: center;
+  padding: 6px 4px;
 }
 
 .cell-arcs {

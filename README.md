@@ -3,50 +3,68 @@
 Simulateur minimaliste de réseau de Pétri (RDP) dans le navigateur.
 Il permet de construire un diagramme dans un playground (places, transitions,
 arcs pondérés, jetons) puis de lancer une simulation pas à pas avec
-visualisation du déplacement des jetons. Un side panel permet de documenter
-le projet (nom, description, tableaux des places et transitions).
+visualisation du déplacement des jetons. Un side panel redimensionnable
+permet de documenter le projet (nom, description, tableaux des places et
+transitions).
 
 ## Fonctionnalités
 
 ### Édition du graphe
-- Ajout de places et de transitions avec **description obligatoire** (modale).
+- Ajout de places et de transitions avec description obligatoire (modale).
 - Création d'arcs orientés entre places et transitions.
-- Poids des arcs configurable (par défaut 1) via une zone cliquable au milieu
-  de l'arc.
-- Déformation des arcs : le poids au milieu de l'arc sert également de poignée
-  pour courber l'arc (glisser-déposer).
+- Poids des arcs configurable (défaut 1) via la zone cliquable au milieu de
+  l'arc.
+- Déformation des arcs : la zone du poids sert également de poignée pour
+  courber l'arc (glisser-déposer).
 - Déplacement des noeuds par glisser-déposer.
 - Suppression de noeuds et d'arcs.
-- Orientation du graphe configurable : **LR** (gauche à droite, transitions
-  verticales) ou **TB** (haut en bas, transitions horizontales).
+- Orientation du graphe configurable : LR (gauche à droite, transitions
+  verticales) ou TB (haut en bas, transitions horizontales).
 - Les flèches entrantes arrivent toujours sur la face d'entrée de la
   transition (gauche en LR, haut en TB), les flèches sortantes partent
   toujours de la face de sortie (droite en LR, bas en TB).
 
+### Playground
+- Zoom avant / arrière via deux boutons loupe en bas au centre du
+  playground. Le zoom s'applique à l'ensemble des noeuds, arcs, jetons et
+  annotations.
+- Position et taille des noeuds conservées en coordonnées "modèle" ; le
+  zoom est purement visuel et ne perturbe pas les interactions.
+
 ### Historique
-- Boutons **Annuler** et **Refaire** dans la barre d'outils.
-- Raccourcis clavier **Ctrl+Z** (annuler) et **Ctrl+Y** ou **Ctrl+Shift+Z**
-  (refaire).
+- Boutons Annuler et Refaire dans la barre d'outils.
+- Raccourcis clavier Ctrl+Z (annuler) et Ctrl+Y / Ctrl+Shift+Z (refaire).
 - L'historique couvre les ajouts, suppressions, déplacements, éditions de
   poids, courbures d'arcs et éditions de la documentation.
 
 ### Simulation
-- Bouton **Play / Pause** : exécution automatique pas à pas.
-- Bouton **Étape** : active le mode pas à pas avec boutons
-  **Précédent / Suivant / Quitter** pour naviguer dans l'historique des
-  franchissements.
-- Bouton **Reset** : restauration du marquage initial.
-- Bouton **Vider** : remise à zéro complète du canevas.
+- Bouton Play / Pause : exécution automatique pas à pas, avec un délai de
+  3 secondes entre chaque franchissement.
+- Bouton Étape : active le mode pas à pas avec boutons Précédent / Suivant /
+  Quitter pour naviguer dans l'historique des franchissements.
+- Bouton Reset : restauration du marquage initial.
+- Bouton Vider : remise à zéro complète du canevas.
 - Les transitions franchissables sont mises en évidence (vert).
 
 ### Documentation (side panel droit)
-- Nom du projet (par défaut « Sans titre »).
-- Description du projet.
-- Tableau **Description des places** : identifiant, description, marquage
+- Nom du projet (par défaut « Sans titre ») et description, tous deux
+  redimensionnables verticalement.
+- Tableau Description des places : identifiant, description, marquage
   initial (éditable).
-- Tableau **Description des transitions** : identifiant, description,
-  places d'entrée et poids (généré automatiquement au format
-  `{Px (poids)}`), places de sortie et poids (généré automatiquement).
+- Tableau Description des transitions : identifiant, description, places
+  d'entrée et poids (généré automatiquement au format `Px (poids)`),
+  places de sortie et poids (généré automatiquement).
+- Largeur du panneau ajustable par glisser-déposer de sa bordure gauche.
+- Panneau affichable / masquable via le bouton burger de la barre d'outils.
+
+### Fenêtre et barre d'outils
+- Toutes les commandes sont regroupées sur une seule ligne :
+  à gauche les modes d'édition, au centre l'orientation, à droite les
+  commandes de simulation, d'historique et de nettoyage.
+- Les boutons n'affichent que leur icône ; la description est fournie par
+  l'infobulle (attribut `title`).
+- Tailles minimales de la fenêtre (1080 × 600) pour éviter les ruptures
+  d'affichage.
 
 ## Prérequis
 
@@ -87,56 +105,54 @@ npm run preview
 
 ### 1. Construire le réseau
 
-| Mode          | Action                                                              |
-| ------------- | ------------------------------------------------------------------- |
-| Sélectionner  | Déplacer un noeud, franchir une transition, courber ou éditer un arc |
-| Place         | Cliquer sur le canevas pour ajouter une place (modale de description) |
-| Transition    | Cliquer sur le canevas pour ajouter une transition (modale de description) |
-| Arc           | Cliquer sur une place puis sur une transition (ou l'inverse)        |
-| Jeton         | Cliquer sur une place pour ajouter un jeton                         |
-| Supprimer     | Cliquer sur un noeud ou un arc pour le supprimer                    |
+| Mode        | Action                                                              |
+| ----------- | ------------------------------------------------------------------- |
+| Sélectionner| Déplacer un noeud, franchir une transition, courber ou éditer un arc |
+| Place       | Cliquer sur le canevas pour ajouter une place (modale de description) |
+| Transition  | Cliquer sur le canevas pour ajouter une transition (modale de description) |
+| Arc         | Cliquer sur une place puis sur une transition (ou l'inverse)        |
+| Jeton       | Cliquer sur une place pour ajouter un jeton                         |
+| Supprimer   | Cliquer sur un noeud ou un arc pour le supprimer                    |
 
-Un arc relie toujours une place et une transition. Les arcs place vers
-transition sont des arcs d'entrée, les arcs transition vers place sont
-des arcs de sortie.
+### 2. Naviguer dans le playground
 
-### 2. Modifier le poids d'un arc
+- Utiliser les deux boutons loupe en bas au centre pour zoomer ou
+  dézoomer.
+- La molette de la souris n'est pas utilisée afin de rester cohérent.
 
-En mode **Sélectionner**, cliquer (sans glisser) sur le cercle au milieu
-de l'arc. Une modale permet de saisir la nouvelle valeur (entier >= 1).
-Le poids est utilisé lors du franchissement : il faut au moins `poids`
-jetons dans chaque place d'entrée, et le franchissement ajoute `poids`
-jetons dans chaque place de sortie.
+### 3. Ajuster le panneau latéral
 
-### 3. Courber un arc
+- Glisser la bordure gauche du panneau pour ajuster sa largeur.
+- Cliquer sur l'icône burger dans la barre d'outils pour le masquer /
+  l'afficher.
 
-En mode **Sélectionner**, glisser le cercle au milieu de l'arc
-perpendiculairement à la corde. La courbure est conservée lors du
-déplacement des noeuds.
+### 4. Modifier le poids d'un arc
 
-### 4. Choisir l'orientation
+En mode Sélectionner, cliquer (sans glisser) sur le cercle au milieu de
+l'arc. Une modale permet de saisir la nouvelle valeur (entier >= 1).
 
-Les boutons **LR** et **TB** de la barre d'outils changent l'orientation du
-graphe :
-- LR (gauche à droite) : les transitions sont représentées par des barres
-  verticales. Les entrées arrivent par la gauche, les sorties partent à
-  droite.
-- TB (haut en bas) : les transitions sont représentées par des barres
-  horizontales. Les entrées arrivent par le haut, les sorties partent par
-  le bas.
+### 5. Courber un arc
 
-### 5. Lancer la simulation
+En mode Sélectionner, glisser le cercle au milieu de l'arc
+perpendiculairement à la corde.
 
-- **Play** lance l'exécution automatique.
-- **Étape** active le mode pas à pas avec **Précédent**, **Suivant**,
-  **Quitter**.
-- En mode **Sélectionner** (hors mode pas à pas), un clic sur une
-  transition franchissable la déclenche immédiatement.
+### 6. Choisir l'orientation
 
-### 6. Annuler / Refaire
+Les boutons LR et TB changent l'orientation du graphe :
+- LR : transitions verticales, entrées à gauche, sorties à droite.
+- TB : transitions horizontales, entrées en haut, sorties en bas.
 
-- Boutons **Annuler** et **Refaire** dans la barre d'outils.
-- **Ctrl+Z** pour annuler, **Ctrl+Y** (ou **Ctrl+Shift+Z**) pour refaire.
+### 7. Lancer la simulation
+
+- Play lance l'exécution automatique (délai de 3 secondes entre étapes).
+- Étape active le mode pas à pas avec Précédent / Suivant / Quitter.
+- En mode Sélectionner (hors mode pas à pas), un clic sur une transition
+  franchissable la déclenche immédiatement.
+
+### 8. Annuler / Refaire
+
+- Boutons dédiés dans la barre d'outils.
+- Ctrl+Z pour annuler, Ctrl+Y (ou Ctrl+Shift+Z) pour refaire.
 - L'historique est limité aux 50 dernières actions.
 
 ## Structure du projet
@@ -155,7 +171,7 @@ petri-net-simulator/
     │   └── petriNet.js         Logique métier (franchissement, géométrie)
     └── components/
         ├── Toolbar.jsx         Barre d'outils (lucide-react)
-        ├── Playground.jsx      Canevas SVG et interactions
+        ├── Playground.jsx      Canevas SVG, interactions, zoom
         ├── PlaceNode.jsx       Rendu d'une place et de ses jetons
         ├── TransitionNode.jsx  Rendu d'une transition
         ├── Arc.jsx             Rendu d'un arc orienté (bézier)
@@ -182,9 +198,9 @@ arc        = { id, from, to, weight, bend }
 
 - Une place ne peut pas contenir de capacité maximale.
 - Pas d'export / import de fichier.
-- L'historique ne contient pas les 50 dernières actions au-delà de cette
-  limite.
+- L'historique ne contient pas plus de 50 actions.
 - Pas d'animation interpolée du déplacement des jetons.
+- Le zoom est centré sur l'origine du SVG (coins supérieur gauche).
 
 ## Stack technique
 

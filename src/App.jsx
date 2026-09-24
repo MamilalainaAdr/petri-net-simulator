@@ -28,8 +28,12 @@ const HINTS = {
   delete: 'Cliquez sur un noeud ou un arc pour le supprimer.',
 }
 
-const STEP_DELAY = 700
+const STEP_DELAY = 3000
 const FIRE_FLASH = 400
+
+const SIDEBAR_MIN = 260
+const SIDEBAR_MAX = 700
+const SIDEBAR_DEFAULT = 360
 
 // --- Modales ---
 
@@ -106,6 +110,9 @@ export default function App() {
     index: 0,
     lastFired: null,
   })
+
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT)
 
   const { places, transitions, arcs, orientation, project } = doc
 
@@ -224,6 +231,31 @@ export default function App() {
       future: [],
     }))
   }, [])
+
+  // --------- Resize sidebar ---------
+
+  const handleSidebarResizer = useCallback(
+    (e) => {
+      e.preventDefault()
+      const startX = e.clientX
+      const startWidth = sidebarWidth
+      const onMove = (ev) => {
+        const delta = startX - ev.clientX
+        const next = Math.max(
+          SIDEBAR_MIN,
+          Math.min(SIDEBAR_MAX, startWidth + delta)
+        )
+        setSidebarWidth(next)
+      }
+      const onUp = () => {
+        window.removeEventListener('pointermove', onMove)
+        window.removeEventListener('pointerup', onUp)
+      }
+      window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerup', onUp)
+    },
+    [sidebarWidth]
+  )
 
   // --------- Simulation ---------
 
@@ -666,6 +698,8 @@ export default function App() {
         canRedo={canRedo}
         onReset={handleReset}
         onClear={handleClear}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={() => setSidebarOpen((v) => !v)}
       />
 
       <div className="app__body">
@@ -688,15 +722,27 @@ export default function App() {
           onEditEnd={endEdit}
         />
 
-        <Sidebar
-          project={project}
-          places={places}
-          transitions={transitions}
-          arcs={arcs}
-          onProjectChange={handleProjectChange}
-          onPlaceChange={handlePlaceChange}
-          onTransitionChange={handleTransitionChange}
-        />
+        {sidebarOpen && (
+          <>
+            <div
+              className="resizer"
+              onPointerDown={handleSidebarResizer}
+              role="separator"
+              aria-orientation="vertical"
+              title="Glisser pour redimensionner"
+            />
+            <Sidebar
+              width={sidebarWidth}
+              project={project}
+              places={places}
+              transitions={transitions}
+              arcs={arcs}
+              onProjectChange={handleProjectChange}
+              onPlaceChange={handlePlaceChange}
+              onTransitionChange={handleTransitionChange}
+            />
+          </>
+        )}
       </div>
 
       <footer className="statusbar">

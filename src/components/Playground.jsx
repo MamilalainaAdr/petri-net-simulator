@@ -1,8 +1,13 @@
 import { useMemo, useRef, useState } from 'react'
+import { ZoomIn, ZoomOut } from 'lucide-react'
 import PlaceNode from './PlaceNode'
 import TransitionNode from './TransitionNode'
 import Arc from './Arc'
 import { getTransitionAttachment, PLACE_RADIUS } from '../utils/petriNet'
+
+const ZOOM_MIN = 0.4
+const ZOOM_MAX = 2.5
+const ZOOM_STEP = 0.15
 
 export default function Playground({
   places,
@@ -26,6 +31,7 @@ export default function Playground({
   const dragRef = useRef(null)
   const bendRef = useRef(null)
   const [hoverPoint, setHoverPoint] = useState(null)
+  const [zoom, setZoom] = useState(1)
 
   const nodeMap = useMemo(() => {
     const map = new Map()
@@ -36,7 +42,10 @@ export default function Playground({
 
   const pointFromEvent = (e) => {
     const rect = svgRef.current.getBoundingClientRect()
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    return {
+      x: (e.clientX - rect.left) / zoom,
+      y: (e.clientY - rect.top) / zoom,
+    }
   }
 
   const handleCanvasPointerDown = (e) => {
@@ -208,67 +217,92 @@ export default function Playground({
           onPointerDown={handleCanvasPointerDown}
         />
 
-        <g className="layer-arcs">
-          {arcs.map((arc) => {
-            const source = nodeMap.get(arc.from)
-            const target = nodeMap.get(arc.to)
-            if (!source || !target) return null
-            return (
-              <Arc
-                key={arc.id}
-                arc={arc}
-                source={source}
-                target={target}
+        <g transform={`scale(${zoom})`}>
+          <g className="layer-arcs">
+            {arcs.map((arc) => {
+              const source = nodeMap.get(arc.from)
+              const target = nodeMap.get(arc.to)
+              if (!source || !target) return null
+              return (
+                <Arc
+                  key={arc.id}
+                  arc={arc}
+                  source={source}
+                  target={target}
+                  orientation={orientation}
+                  mode={mode}
+                  onDelete={onDeleteArc}
+                  onWeightPointerDown={handleWeightPointerDown}
+                  onWeightPointerMove={handleWeightPointerMove}
+                  onWeightPointerUp={handleWeightPointerUp}
+                />
+              )
+            })}
+
+            {previewStart && previewEnd && (
+              <line
+                className="arc__preview"
+                x1={previewStart.x}
+                y1={previewStart.y}
+                x2={previewEnd.x}
+                y2={previewEnd.y}
+              />
+            )}
+          </g>
+
+          <g className="layer-nodes">
+            {places.map((place) => (
+              <PlaceNode
+                key={place.id}
+                place={place}
+                mode={mode}
+                isArcSource={arcSource?.id === place.id}
+                onPointerDown={handleNodePointerDown}
+                onPointerMove={handleNodePointerMove}
+                onPointerUp={handleNodePointerUp}
+              />
+            ))}
+
+            {transitions.map((transition) => (
+              <TransitionNode
+                key={transition.id}
+                transition={transition}
                 orientation={orientation}
                 mode={mode}
-                onDelete={onDeleteArc}
-                onWeightPointerDown={handleWeightPointerDown}
-                onWeightPointerMove={handleWeightPointerMove}
-                onWeightPointerUp={handleWeightPointerUp}
+                isArcSource={arcSource?.id === transition.id}
+                isEnabled={enabledIds.has(transition.id)}
+                isFired={firedId === transition.id}
+                onPointerDown={handleNodePointerDown}
+                onPointerMove={handleNodePointerMove}
+                onPointerUp={handleNodePointerUp}
               />
-            )
-          })}
-
-          {previewStart && previewEnd && (
-            <line
-              className="arc__preview"
-              x1={previewStart.x}
-              y1={previewStart.y}
-              x2={previewEnd.x}
-              y2={previewEnd.y}
-            />
-          )}
-        </g>
-
-        <g className="layer-nodes">
-          {places.map((place) => (
-            <PlaceNode
-              key={place.id}
-              place={place}
-              mode={mode}
-              isArcSource={arcSource?.id === place.id}
-              onPointerDown={handleNodePointerDown}
-              onPointerMove={handleNodePointerMove}
-              onPointerUp={handleNodePointerUp}
-            />
-          ))}
-
-          {transitions.map((transition) => (
-            <TransitionNode
-              key={transition.id}
-              transition={transition}
-              orientation={orientation}
-              mode={mode}
-              isArcSource={arcSource?.id === transition.id}
-              isEnabled={enabledIds.has(transition.id)}
-              isFired={firedId === transition.id}
-              onPointerDown={handleNodePointerDown}
-              onPointerMove={handleNodePointerMove}
-              onPointerUp={handleNodePointerUp}
-            />
-          ))}
+            ))}
+          </g>
         </g>
       </svg>
+
+      <div className="playground__zoom">
+        <button
+          type="button"
+          className="btn btn--icon"
+          onClick={() => setZoom((z) => Math.max(ZOOM_MIN, +(z - ZOOM_STEP).toFixed(2)))}
+          disabled={zoom <= ZOOM_MIN}
+          title="Zoom arrière"
+          aria-label="Zoom arrière"
+        >
+          <ZoomOut size={16} />
+        </button>
+        <button
+          type="button"
+          className="btn btn--icon"
+          onClick={() => setZoom((z) => Math.min(ZOOM_MAX, +(z + ZOOM_STEP).toFixed(2)))}
+          disabled={zoom >= ZOOM_MAX}
+          title="Zoom avant"
+          aria-label="Zoom avant"
+        >
+          <ZoomIn size={16} />
+        </button>
+      </div>
     </div>
   )
 }

@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react'
 
-function EditableText({ value, onChange, multiline, placeholder }) {
+function EditableText({
+  value,
+  onChange,
+  placeholder,
+  rows = 1,
+  resizable = false,
+}) {
   const [local, setLocal] = useState(value ?? '')
   useEffect(() => setLocal(value ?? ''), [value])
 
@@ -8,17 +14,18 @@ function EditableText({ value, onChange, multiline, placeholder }) {
     if (local !== (value ?? '')) onChange(local)
   }
 
-  if (multiline) {
+  if (resizable || rows > 1) {
     return (
       <textarea
         value={local}
         placeholder={placeholder}
+        rows={rows}
         onChange={(e) => setLocal(e.target.value)}
         onBlur={commit}
-        rows={3}
       />
     )
   }
+
   return (
     <input
       type="text"
@@ -55,6 +62,7 @@ function EditableNumber({ value, onChange, min = 0 }) {
 }
 
 export default function Sidebar({
+  width,
   project,
   places,
   transitions,
@@ -70,7 +78,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="sidebar">
+    <aside className="sidebar" style={{ width }}>
       <section className="sidebar__section">
         <h3>Projet</h3>
         <label className="field">
@@ -79,6 +87,8 @@ export default function Sidebar({
             value={project.name}
             onChange={(v) => onProjectChange({ name: v })}
             placeholder="Sans titre"
+            rows={1}
+            resizable
           />
         </label>
         <label className="field">
@@ -86,8 +96,9 @@ export default function Sidebar({
           <EditableText
             value={project.description}
             onChange={(v) => onProjectChange({ description: v })}
-            multiline
             placeholder="Brève description du projet"
+            rows={3}
+            resizable
           />
         </label>
       </section>
@@ -100,9 +111,9 @@ export default function Sidebar({
           <table className="sidebar__table">
             <thead>
               <tr>
-                <th>Place</th>
+                <th className="cell-label">Place</th>
                 <th>Description</th>
-                <th>Marquage initial</th>
+                <th className="cell-number">Marquage initial</th>
               </tr>
             </thead>
             <tbody>
@@ -138,7 +149,7 @@ export default function Sidebar({
           <table className="sidebar__table">
             <thead>
               <tr>
-                <th>Transition</th>
+                <th className="cell-label">Trans.</th>
                 <th>Description</th>
                 <th>Entrées</th>
                 <th>Sorties</th>
@@ -153,7 +164,7 @@ export default function Sidebar({
                   return list
                     .map((a) => {
                       const pid = side === 'in' ? a.from : a.to
-                      return `{${labelFor(pid)} (${a.weight ?? 1})}`
+                      return `${labelFor(pid)} (${a.weight ?? 1})`
                     })
                     .join(', ')
                 }

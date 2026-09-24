@@ -5,12 +5,13 @@ const TOKEN_LAYOUTS = {
   2: [[-8, 0], [8, 0]],
   3: [[0, -9], [-9, 7], [9, 7]],
   4: [[-8, -8], [8, -8], [-8, 8], [8, 8]],
+  5: [[0, 0], [-8, -8], [8, -8], [-8, 8], [8, 8]],
 }
 
 function Tokens({ count }) {
   if (count <= 0) return null
 
-  if (count > 4) {
+  if (count > 5) {
     return (
       <text className="place__token-count" textAnchor="middle" dy="5">
         {count}
