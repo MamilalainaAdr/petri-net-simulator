@@ -16,7 +16,8 @@ import {
   ChevronRight,
   X as XIcon,
   GitBranch,
-  Menu,
+  ArrowRightLeft,
+  ArrowUpDown,
 } from 'lucide-react'
 
 const MODES = [
@@ -48,8 +49,6 @@ export default function Toolbar({
   canRedo,
   onReset,
   onClear,
-  sidebarOpen,
-  onToggleSidebar,
 }) {
   return (
     <header className="toolbar">
@@ -57,16 +56,6 @@ export default function Toolbar({
         <GitBranch size={20} />
         <span>RDP Simulator</span>
       </div>
-
-      <button
-        type="button"
-        className={`btn btn--icon ${sidebarOpen ? 'is-active' : ''}`}
-        onClick={onToggleSidebar}
-        title={sidebarOpen ? 'Masquer le panneau' : 'Afficher le panneau'}
-        aria-label="Basculer le panneau latéral"
-      >
-        <Menu size={16} />
-      </button>
 
       <fieldset className="toolbar__group">
         <legend>Objets</legend>
@@ -83,7 +72,7 @@ export default function Toolbar({
                 type="button"
                 className={cls.join(' ')}
                 onClick={() => onModeChange(m.id)}
-                title={m.label}
+                data-tooltip={m.label}
                 aria-label={m.label}
               >
                 <Icon size={16} />
@@ -93,25 +82,29 @@ export default function Toolbar({
         </div>
       </fieldset>
 
-      <div className="toolbar__orientation">
-        <span className="toolbar__orientation-label">Orientation</span>
-        <button
-          type="button"
-          className={`btn btn--label ${orientation === 'LR' ? 'is-active' : ''}`}
-          onClick={() => onOrientationChange('LR')}
-          title="Orientation gauche à droite"
-        >
-          LR
-        </button>
-        <button
-          type="button"
-          className={`btn btn--label ${orientation === 'TB' ? 'is-active' : ''}`}
-          onClick={() => onOrientationChange('TB')}
-          title="Orientation haut en bas"
-        >
-          HB
-        </button>
-      </div>
+      <fieldset className="toolbar__group toolbar__group--display">
+        <legend>Affichage</legend>
+        <div className="toolbar__group-body">
+          <button
+            type="button"
+            className={`btn btn--label ${orientation === 'LR' ? 'is-active' : ''}`}
+            onClick={() => onOrientationChange('LR')}
+            data-tooltip="Orientation gauche à droite"
+            aria-label="Orientation gauche à droite"
+          >
+            <ArrowRightLeft size={14} />
+          </button>
+          <button
+            type="button"
+            className={`btn btn--label ${orientation === 'TB' ? 'is-active' : ''}`}
+            onClick={() => onOrientationChange('TB')}
+            data-tooltip="Orientation haut en bas"
+            aria-label="Orientation haut en bas"
+          >
+            <ArrowUpDown size={14} />
+          </button>
+        </div>
+      </fieldset>
 
       <fieldset className="toolbar__group toolbar__group--actions">
         <legend>Actions</legend>
@@ -123,7 +116,7 @@ export default function Toolbar({
                 className="btn btn--icon btn--info"
                 onClick={onStepPrev}
                 disabled={!canStepPrev}
-                title="Étape précédente"
+                data-tooltip="Étape précédente"
                 aria-label="Étape précédente"
               >
                 <ChevronLeft size={16} />
@@ -133,7 +126,7 @@ export default function Toolbar({
                 className="btn btn--icon btn--info"
                 onClick={onStepNext}
                 disabled={!canStep}
-                title="Étape suivante"
+                data-tooltip="Étape suivante"
                 aria-label="Étape suivante"
               >
                 <ChevronRight size={16} />
@@ -142,7 +135,7 @@ export default function Toolbar({
                 type="button"
                 className="btn btn--icon"
                 onClick={onStepExit}
-                title="Quitter le mode pas à pas"
+                data-tooltip="Quitter le mode pas à pas"
                 aria-label="Quitter le mode pas à pas"
               >
                 <XIcon size={16} />
@@ -155,7 +148,7 @@ export default function Toolbar({
                 className={`btn btn--icon ${isPlaying ? 'btn--warning' : 'btn--success'}`}
                 onClick={onPlayPause}
                 disabled={!isPlaying && !canStep}
-                title={isPlaying ? 'Pause' : 'Lancer la simulation'}
+                data-tooltip={isPlaying ? 'Pause' : 'Lancer la simulation'}
                 aria-label={isPlaying ? 'Pause' : 'Lancer la simulation'}
               >
                 {isPlaying ? <Pause size={16} /> : <Play size={16} />}
@@ -165,7 +158,7 @@ export default function Toolbar({
                 className="btn btn--icon btn--info"
                 onClick={onStepEnter}
                 disabled={!canStep}
-                title="Lancer en mode pas à pas"
+                data-tooltip="Lancer en mode pas à pas"
                 aria-label="Lancer en mode pas à pas"
               >
                 <StepForward size={16} />
@@ -180,7 +173,7 @@ export default function Toolbar({
             className="btn btn--icon"
             onClick={onUndo}
             disabled={!canUndo}
-            title="Annuler la dernière action (Ctrl+Z)"
+            data-tooltip="Annuler (Ctrl+Z)"
             aria-label="Annuler"
           >
             <Undo2 size={16} />
@@ -190,7 +183,7 @@ export default function Toolbar({
             className="btn btn--icon"
             onClick={onRedo}
             disabled={!canRedo}
-            title="Rétablir l'action annulée (Ctrl+Y)"
+            data-tooltip="Refaire (Ctrl+Y)"
             aria-label="Refaire"
           >
             <Redo2 size={16} />
@@ -202,7 +195,7 @@ export default function Toolbar({
             type="button"
             className="btn btn--icon btn--warning"
             onClick={onReset}
-            title="Restaurer le marquage initial"
+            data-tooltip="Restaurer le marquage initial"
             aria-label="Reset"
           >
             <RotateCcw size={16} />
@@ -211,7 +204,7 @@ export default function Toolbar({
             type="button"
             className="btn btn--icon btn--danger"
             onClick={onClear}
-            title="Vider le canevas"
+            data-tooltip="Vider le canevas"
             aria-label="Vider"
           >
             <Eraser size={16} />

@@ -18,6 +18,7 @@
   --danger: #ef4444;
   --danger-soft: rgba(239, 68, 68, 0.16);
   --token: #f59e0b;
+  --brand-bg: #ffffff;
 }
 
 * {
@@ -57,6 +58,56 @@ body {
   overflow: hidden;
 }
 
+/* ---------------- Tooltip ---------------- */
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  background: var(--panel-3);
+  color: var(--text);
+  padding: 5px 9px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s, transform 0.12s, visibility 0.12s;
+  pointer-events: none;
+  border: 1px solid var(--border);
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+[data-tooltip][data-tooltip-pos="left"]::after {
+  top: 50%;
+  left: auto;
+  right: calc(100% + 8px);
+  transform: translateY(-50%) translateX(4px);
+}
+
+[data-tooltip][data-tooltip-pos="left"]:hover::after {
+  transform: translateY(-50%) translateX(0);
+}
+
+[data-tooltip]:disabled::after {
+  display: none;
+}
+
 /* ---------------- Toolbar ---------------- */
 
 .toolbar {
@@ -68,6 +119,8 @@ body {
   border-bottom: 1px solid var(--border);
   flex-wrap: nowrap;
   min-height: 58px;
+  position: relative;
+  z-index: 20;
 }
 
 .toolbar__brand {
@@ -75,30 +128,16 @@ body {
   align-items: center;
   gap: 8px;
   color: var(--accent);
+  background: var(--brand-bg);
   font-weight: 700;
   font-size: 15px;
   letter-spacing: 0.01em;
   white-space: nowrap;
   flex: 0 0 auto;
-}
-
-.toolbar__orientation {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 4px;
-  margin: 0 auto;
-  flex: 0 1 auto;
-}
-
-.toolbar__orientation-label {
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
-  margin-right: 2px;
-  white-space: nowrap;
+  border-radius: 8px;
+  padding: 5px 12px;
+  height: 32px;
+  line-height: 1;
 }
 
 .toolbar__separator {
@@ -108,8 +147,6 @@ body {
   margin: 0 4px;
   flex: 0 0 auto;
 }
-
-/* ---------------- Toolbar groups (fieldset + legend) ---------------- */
 
 .toolbar__group {
   border: 1px solid var(--border);
@@ -137,6 +174,10 @@ body {
   align-items: center;
   gap: 4px;
   flex-wrap: nowrap;
+}
+
+.toolbar__group--display {
+  margin: 0 auto;
 }
 
 .toolbar__group--actions {
@@ -180,7 +221,7 @@ body {
 
 .btn--label {
   padding: 6px 12px;
-  min-width: 42px;
+  min-width: 62px;
   height: 32px;
   font-weight: 600;
   font-size: 12px;
@@ -420,28 +461,83 @@ body {
   user-select: none;
 }
 
-/* ---------------- Sidebar + resizer ---------------- */
+/* ---------------- Sidebar shell ---------------- */
 
-.resizer {
-  flex: 0 0 4px;
-  width: 4px;
+.sidebar-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  background: var(--panel);
+  position: relative;
+  z-index: 15;
+  min-width: 44px;
+  overflow: hidden;
+  transition: width 0.18s ease;
+}
+
+.sidebar-shell__header {
+  height: 36px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 6px;
+}
+
+.sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  flex: 0 0 auto;
+}
+
+.sidebar-toggle:hover {
+  background: var(--panel-3);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.sidebar-shell__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  position: relative;
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.sidebar-shell__resizer {
+  position: absolute;
+  top: 0;
+  left: -3px;
+  width: 6px;
+  height: 100%;
   cursor: col-resize;
-  background: var(--border);
+  z-index: 10;
   transition: background 0.15s;
 }
 
-.resizer:hover,
-.resizer:active {
+.sidebar-shell__resizer:hover,
+.sidebar-shell__resizer:active {
   background: var(--accent);
 }
 
+/* ---------------- Sidebar ---------------- */
+
 .sidebar {
-  flex: 0 0 auto;
-  border-left: 1px solid var(--border);
-  background: var(--panel);
+  flex: 1 1 auto;
+  min-width: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  min-width: 0;
 }
 
 .sidebar__section {

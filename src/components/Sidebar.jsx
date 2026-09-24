@@ -62,7 +62,6 @@ function EditableNumber({ value, onChange, min = 0 }) {
 }
 
 export default function Sidebar({
-  width,
   project,
   places,
   transitions,
@@ -78,7 +77,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="sidebar" style={{ width }}>
+    <aside className="sidebar">
       <section className="sidebar__section">
         <h3>Projet</h3>
         <label className="field">

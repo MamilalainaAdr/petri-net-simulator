@@ -3,9 +3,8 @@
 Simulateur minimaliste de réseau de Pétri (RDP) dans le navigateur.
 Il permet de construire un diagramme dans un playground (places, transitions,
 arcs pondérés, jetons) puis de lancer une simulation pas à pas avec
-visualisation du déplacement des jetons. Un side panel redimensionnable
-permet de documenter le projet (nom, description, tableaux des places et
-transitions).
+visualisation du déplacement des jetons. Un side panel redimensionnable et
+collapsable permet de documenter le projet.
 
 ## Fonctionnalités
 
@@ -53,20 +52,25 @@ transitions).
   d'entrée et poids (généré automatiquement au format `Px (poids)`),
   places de sortie et poids (généré automatiquement).
 - Largeur du panneau ajustable par glisser-déposer de sa bordure gauche.
-- Panneau affichable / masquable via le bouton burger de la barre d'outils.
+- Panneau pliable : un bouton (< / >) situé en haut à gauche du panneau
+  permet de le replier en une barre verticale de 44 px ou de le déplier.
+  Au survol, l'étiquette du bouton indique « Afficher le panneau » ou
+  « Masquer le panneau ».
 
 ### Barre d'outils
 - Logo GitBranch suivi du texte « RDP Simulator » en gras bleu.
-- Bouton burger pour afficher / masquer le panneau latéral.
 - Groupe **Objets** encadré : sélectionner, place, transition, arc, jeton,
   supprimer.
-- Bloc central **Orientation** avec deux boutons texte LR et HB.
+- Groupe central **Affichage** encadré avec deux boutons texte LR / HB
+  accompagnés d'icônes de flèches.
 - Groupe **Actions** encadré : play / pause (ou précédent / suivant / quitter
   en mode pas à pas), annuler, refaire, reset, vider.
-- Les intitulés de groupe (Objets / Actions) apparaissent sur la bordure
-  supérieure, en majuscules, de petite taille, décalés vers la gauche.
-- Les boutons n'affichent que leur icône ; la description est fournie par
-  l'infobulle (attribut `title`).
+- Les intitulés de groupe (Objets / Affichage / Actions) apparaissent sur
+  la bordure supérieure, en majuscules, de petite taille, décalés vers la
+  gauche.
+- Les étiquettes d'aide au survol (tooltips) utilisent un style personnalisé
+  cohérent avec le reste de l'interface : fond `panel-3`, bordure, ombre
+  légère, apparition en fondu.
 - Tailles minimales de la fenêtre (1080 × 600) pour éviter les ruptures
   d'affichage.
 
@@ -125,9 +129,9 @@ npm run preview
 
 ### 3. Ajuster le panneau latéral
 
-- Glisser la bordure gauche du panneau pour ajuster sa largeur.
-- Cliquer sur l'icône burger dans la barre d'outils pour le masquer /
-  l'afficher.
+- Cliquer sur le bouton en haut à gauche du panneau pour le plier ou le
+  déplier.
+- Lorsqu'il est déplié, glisser sa bordure gauche pour ajuster sa largeur.
 
 ### 4. Modifier le poids d'un arc
 
@@ -141,7 +145,7 @@ perpendiculairement à la corde.
 
 ### 6. Choisir l'orientation
 
-Les boutons LR et HB changent l'orientation du graphe :
+Les boutons LR et HB du groupe Affichage changent l'orientation du graphe :
 - LR : transitions verticales, entrées à gauche, sorties à droite.
 - HB : transitions horizontales, entrées en haut, sorties en bas.
 

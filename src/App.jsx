@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Toolbar from './components/Toolbar'
 import Playground from './components/Playground'
 import Sidebar from './components/Sidebar'
@@ -34,6 +35,7 @@ const FIRE_FLASH = 400
 const SIDEBAR_MIN = 260
 const SIDEBAR_MAX = 700
 const SIDEBAR_DEFAULT = 360
+const SIDEBAR_COLLAPSED = 44
 
 // --- Modales ---
 
@@ -698,8 +700,6 @@ export default function App() {
         canRedo={canRedo}
         onReset={handleReset}
         onClear={handleClear}
-        sidebarOpen={sidebarOpen}
-        onToggleSidebar={() => setSidebarOpen((v) => !v)}
       />
 
       <div className="app__body">
@@ -722,27 +722,51 @@ export default function App() {
           onEditEnd={endEdit}
         />
 
-        {sidebarOpen && (
-          <>
-            <div
-              className="resizer"
-              onPointerDown={handleSidebarResizer}
-              role="separator"
-              aria-orientation="vertical"
-              title="Glisser pour redimensionner"
-            />
-            <Sidebar
-              width={sidebarWidth}
-              project={project}
-              places={places}
-              transitions={transitions}
-              arcs={arcs}
-              onProjectChange={handleProjectChange}
-              onPlaceChange={handlePlaceChange}
-              onTransitionChange={handleTransitionChange}
-            />
-          </>
-        )}
+        <div
+          className={`sidebar-shell ${sidebarOpen ? 'is-open' : 'is-collapsed'}`}
+          style={{ width: sidebarOpen ? sidebarWidth : SIDEBAR_COLLAPSED }}
+        >
+          <div className="sidebar-shell__header">
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={() => setSidebarOpen((v) => !v)}
+              data-tooltip={
+                sidebarOpen ? 'Masquer le panneau' : 'Afficher le panneau'
+              }
+              data-tooltip-pos="left"
+              aria-label={
+                sidebarOpen ? 'Masquer le panneau' : 'Afficher le panneau'
+              }
+            >
+              {sidebarOpen ? (
+                <ChevronRight size={16} />
+              ) : (
+                <ChevronLeft size={16} />
+              )}
+            </button>
+          </div>
+
+          {sidebarOpen && (
+            <div className="sidebar-shell__body">
+              <div
+                className="sidebar-shell__resizer"
+                onPointerDown={handleSidebarResizer}
+                role="separator"
+                aria-orientation="vertical"
+              />
+              <Sidebar
+                project={project}
+                places={places}
+                transitions={transitions}
+                arcs={arcs}
+                onProjectChange={handleProjectChange}
+                onPlaceChange={handlePlaceChange}
+                onTransitionChange={handleTransitionChange}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <footer className="statusbar">

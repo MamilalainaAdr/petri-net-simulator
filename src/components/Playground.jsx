@@ -287,7 +287,7 @@ export default function Playground({
           className="btn btn--icon"
           onClick={() => setZoom((z) => Math.max(ZOOM_MIN, +(z - ZOOM_STEP).toFixed(2)))}
           disabled={zoom <= ZOOM_MIN}
-          title="Zoom arrière"
+          data-tooltip="Zoom arrière"
           aria-label="Zoom arrière"
         >
           <ZoomOut size={16} />
@@ -297,7 +297,7 @@ export default function Playground({
           className="btn btn--icon"
           onClick={() => setZoom((z) => Math.min(ZOOM_MAX, +(z + ZOOM_STEP).toFixed(2)))}
           disabled={zoom >= ZOOM_MAX}
-          title="Zoom avant"
+          data-tooltip="Zoom avant"
           aria-label="Zoom avant"
         >
           <ZoomIn size={16} />
