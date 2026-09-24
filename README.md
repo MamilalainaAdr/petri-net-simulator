@@ -19,17 +19,15 @@ transitions).
 - Déplacement des noeuds par glisser-déposer.
 - Suppression de noeuds et d'arcs.
 - Orientation du graphe configurable : LR (gauche à droite, transitions
-  verticales) ou TB (haut en bas, transitions horizontales).
+  verticales) ou HB (haut-bas, transitions horizontales).
 - Les flèches entrantes arrivent toujours sur la face d'entrée de la
-  transition (gauche en LR, haut en TB), les flèches sortantes partent
-  toujours de la face de sortie (droite en LR, bas en TB).
+  transition (gauche en LR, haut en HB), les flèches sortantes partent
+  toujours de la face de sortie (droite en LR, bas en HB).
 
 ### Playground
 - Zoom avant / arrière via deux boutons loupe en bas au centre du
   playground. Le zoom s'applique à l'ensemble des noeuds, arcs, jetons et
   annotations.
-- Position et taille des noeuds conservées en coordonnées "modèle" ; le
-  zoom est purement visuel et ne perturbe pas les interactions.
 
 ### Historique
 - Boutons Annuler et Refaire dans la barre d'outils.
@@ -57,10 +55,16 @@ transitions).
 - Largeur du panneau ajustable par glisser-déposer de sa bordure gauche.
 - Panneau affichable / masquable via le bouton burger de la barre d'outils.
 
-### Fenêtre et barre d'outils
-- Toutes les commandes sont regroupées sur une seule ligne :
-  à gauche les modes d'édition, au centre l'orientation, à droite les
-  commandes de simulation, d'historique et de nettoyage.
+### Barre d'outils
+- Logo GitBranch suivi du texte « RDP Simulator » en gras bleu.
+- Bouton burger pour afficher / masquer le panneau latéral.
+- Groupe **Objets** encadré : sélectionner, place, transition, arc, jeton,
+  supprimer.
+- Bloc central **Orientation** avec deux boutons texte LR et HB.
+- Groupe **Actions** encadré : play / pause (ou précédent / suivant / quitter
+  en mode pas à pas), annuler, refaire, reset, vider.
+- Les intitulés de groupe (Objets / Actions) apparaissent sur la bordure
+  supérieure, en majuscules, de petite taille, décalés vers la gauche.
 - Les boutons n'affichent que leur icône ; la description est fournie par
   l'infobulle (attribut `title`).
 - Tailles minimales de la fenêtre (1080 × 600) pour éviter les ruptures
@@ -118,7 +122,6 @@ npm run preview
 
 - Utiliser les deux boutons loupe en bas au centre pour zoomer ou
   dézoomer.
-- La molette de la souris n'est pas utilisée afin de rester cohérent.
 
 ### 3. Ajuster le panneau latéral
 
@@ -138,9 +141,9 @@ perpendiculairement à la corde.
 
 ### 6. Choisir l'orientation
 
-Les boutons LR et TB changent l'orientation du graphe :
+Les boutons LR et HB changent l'orientation du graphe :
 - LR : transitions verticales, entrées à gauche, sorties à droite.
-- TB : transitions horizontales, entrées en haut, sorties en bas.
+- HB : transitions horizontales, entrées en haut, sorties en bas.
 
 ### 7. Lancer la simulation
 

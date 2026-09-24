@@ -62,43 +62,43 @@ body {
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 10px;
+  padding: 6px 12px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
   flex-wrap: nowrap;
-}
-
-.toolbar__section {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: nowrap;
-}
-
-.toolbar__section--left {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.toolbar__section--middle {
-  flex: 0 0 auto;
-}
-
-.toolbar__section--right {
-  flex: 1 1 auto;
-  justify-content: flex-end;
-  min-width: 0;
+  min-height: 58px;
 }
 
 .toolbar__brand {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
+  gap: 8px;
   color: var(--accent);
-  margin-right: 4px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.toolbar__orientation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 4px;
+  margin: 0 auto;
+  flex: 0 1 auto;
+}
+
+.toolbar__orientation-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  margin-right: 2px;
+  white-space: nowrap;
 }
 
 .toolbar__separator {
@@ -106,6 +106,40 @@ body {
   height: 20px;
   background: var(--border);
   margin: 0 4px;
+  flex: 0 0 auto;
+}
+
+/* ---------------- Toolbar groups (fieldset + legend) ---------------- */
+
+.toolbar__group {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2px 8px 6px;
+  margin: 0;
+  min-width: 0;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.toolbar__group legend {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+  padding: 0 6px;
+  margin-left: 4px;
+  line-height: 1;
+}
+
+.toolbar__group-body {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.toolbar__group--actions {
   flex: 0 0 auto;
 }
 
@@ -142,6 +176,15 @@ body {
   height: 32px;
   padding: 0;
   flex: 0 0 auto;
+}
+
+.btn--label {
+  padding: 6px 12px;
+  min-width: 42px;
+  height: 32px;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 .btn.is-active {
