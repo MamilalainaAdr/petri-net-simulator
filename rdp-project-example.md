@@ -34,8 +34,6 @@
 | **T3 – Déclencher_Réapprovisionnement** | P4 (3), P6 (1) | P7 (1) | Dès qu'au moins 3 emplacements sont vides (stock bas) et que le mécanisme de réappro est libre : réservation de 3 emplacements et démarrage d'un cycle de réapprovisionnement. |
 | **T4 – Terminer_Réapprovisionnement** | P7 (1), P8 (3) | P3 (3), P6 (1) | L'entrepôt fournit 3 boissons qui remplissent les emplacements réservés ; le stock du distributeur augmente de 3, et le mécanisme redevient disponible. |
 
-**Remarque sur les poids d'arcs :** les arcs de T3/T4 utilisent un poids de 3 (transfert par lot). Si l'outil choisi ne gère pas les arcs pondérés, on peut remplacer ces deux transitions par 3 paires identiques de transitions unitaires (une boisson à la fois), ce qui donne un réseau strictement équivalent en comportement.
-
 ---
 
 ## 3. Vérification de cohérence
