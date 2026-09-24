@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileDown } from 'lucide-react'
 import Toolbar from './components/Toolbar'
 import Playground from './components/Playground'
 import Sidebar from './components/Sidebar'
@@ -10,6 +10,7 @@ import {
   getEnabledTransitions,
   isTransitionEnabled,
 } from './utils/petriNet'
+import { exportProjectToPdf } from './utils/exportPdf'
 
 const INITIAL_DOC = {
   project: { name: 'Sans titre', description: '' },
@@ -112,6 +113,7 @@ export default function App() {
     index: 0,
     lastFired: null,
   })
+  const [exporting, setExporting] = useState(false)
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT)
@@ -632,6 +634,26 @@ export default function App() {
     setMessage('Canevas vidé')
   }
 
+  // --------- Export PDF ---------
+
+  const canExport = enabledTransitions.length > 0
+
+  const handleExport = useCallback(async () => {
+    if (exporting || !canExport) return
+    setExporting(true)
+    setMessage('Préparation du PDF...')
+    try {
+      await exportProjectToPdf(docRef.current)
+      setMessage('Export PDF terminé')
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err)
+      setMessage("Erreur lors de l'export PDF")
+    } finally {
+      setExporting(false)
+    }
+  }, [exporting, canExport])
+
   // --------- Sidebar ---------
 
   const handleProjectChange = (patch) => {
@@ -744,6 +766,19 @@ export default function App() {
               ) : (
                 <ChevronLeft size={16} />
               )}
+            </button>
+
+            <button
+              type="button"
+              className="sidebar-export"
+              onClick={handleExport}
+              disabled={!canExport || exporting}
+              data-tooltip="Exporter le projet"
+              data-tooltip-pos="left"
+              aria-label="Exporter le projet"
+            >
+              <FileDown size={16} />
+              {sidebarOpen && <span>Exporter</span>}
             </button>
           </div>
 
