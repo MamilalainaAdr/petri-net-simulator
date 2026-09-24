@@ -39,6 +39,9 @@ const TOKEN_LAYOUTS = {
   5: [[0, 0], [-8, -8], [8, -8], [-8, 8], [8, 8]],
 }
 
+// Facteur de réduction du diagramme dans la page PDF.
+const DIAGRAM_SAFETY = 0.85
+
 function escapeXml(s) {
   return String(s ?? '').replace(/[<>&'"]/g, (c) => ({
     '<': '&lt;',
@@ -49,10 +52,19 @@ function escapeXml(s) {
   }[c]))
 }
 
+const yieldToUi = () =>
+  new Promise((resolve) => {
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => setTimeout(resolve, 0))
+    } else {
+      setTimeout(resolve, 0)
+    }
+  })
+
 // ------------------------------------------------------------------
 // Rendu SVG autonome (thème clair, sans styles externes)
 // ------------------------------------------------------------------
-function computeBounds(places, transitions, orientation) {
+function computeBounds(places, transitions, arcs, orientation) {
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity
@@ -74,6 +86,23 @@ function computeBounds(places, transitions, orientation) {
     push(t.x + w / 2 + 10, t.y + h / 2 + 30)
   })
 
+  // Inclure la courbure des arcs (point médian et point de contrôle) pour
+  // éviter tout rognage en cas d'arc fortement déformé.
+  arcs.forEach((arc) => {
+    const source =
+      places.find((p) => p.id === arc.from) ||
+      transitions.find((t) => t.id === arc.from)
+    const target =
+      places.find((p) => p.id === arc.to) ||
+      transitions.find((t) => t.id === arc.to)
+    if (!source || !target) return
+    const geom = computeArcGeometry(arc, source, target, orientation)
+    push(geom.start.x, geom.start.y)
+    push(geom.end.x, geom.end.y)
+    push(geom.mid.x, geom.mid.y)
+    push(geom.control.x, geom.control.y)
+  })
+
   if (!isFinite(minX)) {
     minX = 0
     minY = 0
@@ -87,9 +116,10 @@ function renderDiagramSvg(places, transitions, arcs, orientation) {
   const { minX, minY, maxX, maxY } = computeBounds(
     places,
     transitions,
+    arcs,
     orientation
   )
-  const pad = 20
+  const pad = 24
   const width = Math.max(1, maxX - minX + pad * 2)
   const height = Math.max(1, maxY - minY + pad * 2)
   const viewX = minX - pad
@@ -218,9 +248,19 @@ function computeSimulationSteps(doc) {
 // ------------------------------------------------------------------
 // Export principal
 // ------------------------------------------------------------------
-export async function exportProjectToPdf(doc) {
+export async function exportProjectToPdf(doc, options = {}) {
+  const { onProgress } = options
+  const report = (value, label) => {
+    if (typeof onProgress !== 'function') return
+    const clamped = Math.max(0, Math.min(100, value))
+    onProgress({ value: clamped, label })
+  }
+
   const { orientation, project, places, transitions, arcs } = doc
   const isLandscape = orientation === 'LR'
+
+  report(1, 'Initialisation du document...')
+  await yieldToUi()
 
   const pdf = new jsPDF({
     orientation: isLandscape ? 'landscape' : 'portrait',
@@ -253,6 +293,9 @@ export async function exportProjectToPdf(doc) {
   // ================================================================
   // Page 1 : contenu du sidebar
   // ================================================================
+  report(4, 'Rédaction de la documentation...')
+  await yieldToUi()
+
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(12)
   pdf.setTextColor(...RGB.text)
@@ -403,9 +446,21 @@ export async function exportProjectToPdf(doc) {
   // ================================================================
   // Pages 2..N : diagramme à chaque étape
   // ================================================================
+  report(12, 'Calcul des étapes de simulation...')
+  await yieldToUi()
   const steps = computeSimulationSteps(doc)
+  const totalSteps = steps.length
+  const totalPages = totalSteps + 1
+
+  const baseProgress = 14
+  const topProgress = 96
+  const span = topProgress - baseProgress
 
   for (let i = 0; i < steps.length; i += 1) {
+    const p1 = baseProgress + span * (i / totalSteps)
+    report(p1, `Rendu du diagramme ${i + 1} / ${totalSteps}...`)
+    await yieldToUi()
+
     const stepPlaces = steps[i]
     const { svg, width, height } = renderDiagramSvg(
       stepPlaces,
@@ -417,26 +472,46 @@ export async function exportProjectToPdf(doc) {
 
     pdf.addPage()
 
-    // Titre de l'étape (sous l'entête)
+    // Titre de l'étape
     pdf.setFont('helvetica', 'bold')
     pdf.setFontSize(10)
     pdf.setTextColor(...RGB.muted)
-    pdf.text(`Étape ${i + 1} / ${steps.length}`, margin, contentTop - 6)
+    pdf.text(`Étape ${i + 1} / ${totalSteps}`, margin, contentTop - 6)
 
+    // Placement du diagramme : réduction d'un facteur de sécurité pour
+    // éviter tout débordement ou rognage aux bords de la zone utile.
     const availTop = contentTop
     const availH = contentBottom - contentTop
-    const ratio = Math.min(contentW / width, availH / height)
+    const maxW = contentW * DIAGRAM_SAFETY
+    const maxH = availH * DIAGRAM_SAFETY
+    const ratio = Math.min(maxW / width, maxH / height)
     const drawW = width * ratio
     const drawH = height * ratio
     const drawX = margin + (contentW - drawW) / 2
     const drawY = availTop + (availH - drawH) / 2
 
-    pdf.addImage(pngDataUrl, 'PNG', drawX, drawY, drawW, drawH, undefined, 'FAST')
+    pdf.addImage(
+      pngDataUrl,
+      'PNG',
+      drawX,
+      drawY,
+      drawW,
+      drawH,
+      undefined,
+      'FAST'
+    )
+
+    const p2 = baseProgress + span * ((i + 1) / totalSteps)
+    report(p2, `Page ${i + 2} / ${totalPages} générée`)
+    await yieldToUi()
   }
 
   // ================================================================
   // Entête + pied de page sur toutes les pages
   // ================================================================
+  report(97, 'Ajout des entêtes et pieds de page...')
+  await yieldToUi()
+
   const total = pdf.getNumberOfPages()
   const headerTextY = 20
   const headerLineY = 24
@@ -465,7 +540,12 @@ export async function exportProjectToPdf(doc) {
     })
   }
 
+  report(99, 'Finalisation du document...')
+  await yieldToUi()
+
   const safeName =
     (project.name || 'projet').replace(/[^\w\-]+/g, '_') || 'projet'
   pdf.save(`${safeName}.pdf`)
+
+  report(100, 'Export terminé')
 }

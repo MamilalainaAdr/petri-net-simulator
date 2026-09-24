@@ -16,20 +16,27 @@ redimensionnable, et d'exporter le tout en PDF.
 - Déformation des arcs par glisser-déposer de la poignée centrale.
 - Déplacement des noeuds par glisser-déposer.
 - Suppression de noeuds et d'arcs.
-- Orientation du graphe : LR (gauche à droite, transitions verticales) ou
-  HB (haut-bas, transitions horizontales).
+- Orientation du graphe : LR (gauche à droite) ou HB (haut-bas).
 - Les flèches entrantes arrivent toujours sur la face d'entrée de la
-  transition (gauche en LR, haut en HB), les flèches sortantes partent
-  toujours de la face de sortie (droite en LR, bas en HB).
+  transition, les flèches sortantes partent toujours de la face de sortie.
 
 ### Playground
 - Zoom avant / arrière via deux boutons loupe en bas au centre.
-- Le zoom s'applique à l'ensemble des noeuds, arcs, jetons et annotations.
+
+### Marquage initial
+- Le champ de marquage initial de chaque place accepte un entier positif
+  ou la lettre `n` (majuscule ou minuscule) pour représenter un marquage
+  « infini ».
+- Lorsqu'une place est en mode `n` :
+  - la place affiche `n`, puis `n-1`, `n-2`, … à mesure que la simulation
+    consomme des jetons.
+  - l'ajout manuel de jetons via le mode Jeton est ignoré.
+  - `Reset` restaure la place à l'état `n`.
+- L'export PDF est refusé si une place utilise `n` (voir section Export).
 
 ### Historique
 - Boutons Annuler / Refaire dans la barre d'outils.
 - Raccourcis clavier Ctrl+Z et Ctrl+Y (ou Ctrl+Shift+Z).
-- Historique limité aux 50 dernières actions.
 
 ### Simulation
 - Play / Pause : exécution automatique (délai de 3 secondes entre étapes).
@@ -45,7 +52,7 @@ redimensionnable, et d'exporter le tout en PDF.
   sorties et poids (générés automatiquement).
 - Largeur ajustable par glisser-déposer de sa bordure gauche.
 - Panneau pliable via un bouton (< / >) : replié, il devient une barre
-  verticale de 44 px avec les boutons empilés verticalement.
+  verticale de 44 px.
 
 ### Export PDF
 - Bouton Exporter dans le header de la sidebar, visible aussi quand le
@@ -53,29 +60,36 @@ redimensionnable, et d'exporter le tout en PDF.
   projet ».
 - Le bouton est actif uniquement lorsque le projet est exécutable (au
   moins une transition franchissable) — même condition que le bouton Play.
+- **Si le marquage initial contient la valeur `n`**, une modale s'affiche
+  pour prévenir : « Veuillez remplacer n par un nombre valide ».
 - **Contenu du PDF** :
-  - Page 1 : contenu du panneau latéral (nom du projet, description,
-    tableaux des places et transitions).
-  - Pages suivantes : un schéma du diagramme à chaque étape d'exécution,
-    jusqu'à ce qu'aucune transition ne soit franchissable.
-- **Format des pages** : A4.
-- **Orientation** : paysage si l'affichage du projet est en LR, portrait
-  si l'affichage est en HB.
-- **Entête** sur chaque page : nom du projet.
-- **Pied de page** sur chaque page : numérotation `Page X / Y`.
-- **Thème** : mode clair avec la couleur d'accentuation bleue du projet
-  (`#4f8cff`), transitions grises, jetons orange.
+  - Page 1 : contenu du panneau latéral (nom, description, tableaux).
+  - Pages suivantes : un schéma du diagramme par étape d'exécution, jusqu'à
+    ce qu'aucune transition ne soit franchissable.
+- **Format** : A4, paysage si l'affichage est en LR sinon portrait.
+- **Diagramme** : réduit d'un facteur de sécurité (85 % de la zone utile)
+  pour ne jamais déborder ou être rogné, y compris lorsque des arcs sont
+  fortement courbés.
+- **Entête** : nom du projet. **Pied de page** : `Page X / Y`.
+- **Thème** : mode clair, accent bleu (`#4f8cff`), transitions grises,
+  jetons orange.
+- **Barre de progression** : pendant la génération, la barre de statut
+  affiche une barre de progression avec le libellé de l'étape courante
+  (initialisation, rédaction, rendu des diagrammes, entêtes/pieds,
+  finalisation) et le pourcentage d'avancement.
 
 ### Barre d'outils
-- Logo GitBranch suivi du texte « RDP Simulator » sur fond blanc.
-- Groupe **Objets** encadré (sélectionner, place, transition, arc, jeton,
-  supprimer).
-- Groupe **Affichage** encadré (boutons LR / HB avec icônes et texte).
-- Groupe **Actions** encadré (play / pause ou précédent / suivant / quitter,
-  annuler, refaire, reset, vider).
+- Logo GitBranch + « RDP Simulator » sur fond blanc.
+- Groupes encadrés : **Objets**, **Affichage** (LR / HB), **Actions**.
 - Intitulés de groupe en majuscules sur la bordure supérieure.
-- Étiquettes d'aide au survol (tooltips) personnalisées, cohérentes avec
-  le reste de l'interface.
+
+### Étiquettes au survol (tooltips)
+- Les tooltips de la barre d'outils utilisent un pseudo-élément `::after`.
+- Les tooltips de la sidebar (bouton de repli, bouton Exporter) et du
+  playground (boutons de zoom) utilisent un composant React qui rend le
+  tooltip dans un portail au niveau de `document.body`. Cela garantit
+  l'affichage au-dessus de tout, y compris hors de conteneurs avec
+  `overflow: hidden`.
 
 ## Prérequis
 
@@ -104,8 +118,6 @@ automatiquement dans le navigateur.
 npm run build
 ```
 
-Les fichiers générés se trouvent dans le dossier `dist/`.
-
 ## Prévisualisation du build
 
 ```bash
@@ -119,51 +131,31 @@ npm run preview
 | Mode        | Action                                                              |
 | ----------- | ------------------------------------------------------------------- |
 | Sélectionner| Déplacer un noeud, franchir une transition, courber ou éditer un arc |
-| Place       | Cliquer sur le canevas pour ajouter une place (modale de description) |
-| Transition  | Cliquer sur le canevas pour ajouter une transition (modale de description) |
+| Place       | Cliquer sur le canevas pour ajouter une place                       |
+| Transition  | Cliquer sur le canevas pour ajouter une transition                  |
 | Arc         | Cliquer sur une place puis sur une transition (ou l'inverse)        |
 | Jeton       | Cliquer sur une place pour ajouter un jeton                         |
 | Supprimer   | Cliquer sur un noeud ou un arc pour le supprimer                    |
 
-### 2. Naviguer dans le playground
+### 2. Utiliser le marquage « n »
 
-- Utiliser les deux boutons loupe en bas au centre pour zoomer ou dézoomer.
+Dans le tableau des places du panneau latéral, saisir `n` (ou `N`) dans la
+colonne « Marquage initial ». La place affiche alors `n` sur le diagramme,
+puis `n-1`, `n-2`, … à chaque jeton consommé.
 
-### 3. Ajuster le panneau latéral
+### 3. Exporter en PDF
 
-- Cliquer sur le bouton en haut à gauche du panneau pour le plier ou le
-  déplier.
-- Lorsqu'il est déplié, glisser sa bordure gauche pour ajuster sa largeur.
+Le bouton Exporter est grisé tant qu'aucune transition n'est franchissable.
+S'il est actif, un clic génère un fichier PDF :
 
-### 4. Modifier le poids d'un arc
+- La barre de statut remplace le message habituel par une barre de
+  progression affichant le pourcentage et l'étape courante.
+- À la fin, le navigateur télécharge un fichier PDF nommé d'après le nom
+  du projet.
+- Si une place utilise `n` dans son marquage initial, une modale s'affiche
+  et l'export est bloqué.
 
-En mode Sélectionner, cliquer (sans glisser) sur le cercle au milieu de
-l'arc. Une modale permet de saisir la nouvelle valeur (entier >= 1).
-
-### 5. Courber un arc
-
-En mode Sélectionner, glisser le cercle au milieu de l'arc
-perpendiculairement à la corde.
-
-### 6. Choisir l'orientation
-
-Les boutons LR et HB du groupe Affichage changent l'orientation du graphe.
-
-### 7. Lancer la simulation
-
-- Play lance l'exécution automatique (délai de 3 secondes).
-- Étape active le mode pas à pas avec Précédent / Suivant / Quitter.
-- En mode Sélectionner (hors mode pas à pas), un clic sur une transition
-  franchissable la déclenche immédiatement.
-
-### 8. Exporter en PDF
-
-- Cliquer sur le bouton Exporter dans le header de la sidebar.
-- Le navigateur télécharge un fichier PDF nommé d'après le nom du projet.
-- Le PDF contient la documentation du projet puis un schéma par étape
-  d'exécution simulée.
-
-### 9. Annuler / Refaire
+### 4. Annuler / Refaire
 
 - Boutons dédiés dans la barre d'outils.
 - Ctrl+Z pour annuler, Ctrl+Y (ou Ctrl+Shift+Z) pour refaire.
@@ -190,7 +182,8 @@ petri-net-simulator/
         ├── TransitionNode.jsx  Rendu d'une transition
         ├── Arc.jsx             Rendu d'un arc orienté (bézier)
         ├── Sidebar.jsx         Documentation du projet
-        └── Modal.jsx           Modale générique
+        ├── Modal.jsx           Modale générique
+        └── Tooltip.jsx         Tooltip via portail React
 ```
 
 ## Modèle de données
@@ -202,11 +195,12 @@ transition = { id, type: 'transition', x, y, label, description }
 arc        = { id, from, to, weight, bend }
 ```
 
+- `place.initialTokens` : entier positif, ou la chaîne `"n"` pour un
+  marquage infini.
+- `place.tokens` : marquage courant (nombre entier ; vaut `INFINITE_TOKENS`
+  lorsque le marquage initial est `"n"`).
 - `arc.weight` : poids (entier >= 1), défaut 1.
 - `arc.bend` : décalage perpendiculaire signé du milieu de l'arc, défaut 0.
-- `place.initialTokens` : marquage initial (restauré via Reset et utilisé
-  pour l'export).
-- `place.tokens` : marquage courant (modifié pendant la simulation).
 
 ## Limites du MVP
 
@@ -214,9 +208,7 @@ arc        = { id, from, to, weight, bend }
 - Pas d'export / import de fichier source (uniquement l'export PDF).
 - L'historique ne contient pas plus de 50 actions.
 - Pas d'animation interpolée du déplacement des jetons.
-- Le zoom est centré sur l'origine du SVG (coins supérieur gauche).
-- L'export PDF part du marquage courant (après modifications éventuelles
-  par clic Jeton ou après simulation) et simule jusqu'à épuisement.
+- L'export PDF est refusé lorsque le marquage initial contient `n`.
 
 ## Stack technique
 

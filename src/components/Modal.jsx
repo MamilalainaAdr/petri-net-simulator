@@ -6,6 +6,8 @@ export default function Modal({
   onClose,
   onConfirm,
   confirmLabel = 'Valider',
+  cancelLabel = 'Annuler',
+  hideCancel = false,
   children,
 }) {
   useEffect(() => {
@@ -32,9 +34,11 @@ export default function Modal({
         </div>
         <div className="modal__body">{children}</div>
         <div className="modal__actions">
-          <button type="button" className="btn" onClick={onClose}>
-            Annuler
-          </button>
+          {!hideCancel && (
+            <button type="button" className="btn" onClick={onClose}>
+              {cancelLabel}
+            </button>
+          )}
           <button type="button" className="btn btn--primary" onClick={onConfirm}>
             {confirmLabel}
           </button>

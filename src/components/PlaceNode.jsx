@@ -1,4 +1,8 @@
-import { PLACE_RADIUS } from '../utils/petriNet'
+import {
+  PLACE_RADIUS,
+  INFINITE_TOKENS,
+  isInfiniteMarking,
+} from '../utils/petriNet'
 
 const TOKEN_LAYOUTS = {
   1: [[0, 0]],
@@ -8,18 +12,37 @@ const TOKEN_LAYOUTS = {
   5: [[0, 0], [-8, -8], [8, -8], [-8, 8], [8, 8]],
 }
 
-function Tokens({ count }) {
-  if (count <= 0) return null
+function Tokens({ place }) {
+  const { tokens, initialTokens } = place
 
-  if (count > 5) {
+  if (isInfiniteMarking(initialTokens)) {
+    const diff = INFINITE_TOKENS - tokens
+    let label
+    if (diff === 0) label = 'n'
+    else if (diff > 0) label = `n-${diff}`
+    else label = `n+${-diff}`
     return (
-      <text className="place__token-count" textAnchor="middle" dy="5">
-        {count}
+      <text
+        className="place__token-count place__token-count--inf"
+        textAnchor="middle"
+        dy="5"
+      >
+        {label}
       </text>
     )
   }
 
-  return TOKEN_LAYOUTS[count].map(([dx, dy], index) => (
+  if (tokens <= 0) return null
+
+  if (tokens > 5) {
+    return (
+      <text className="place__token-count" textAnchor="middle" dy="5">
+        {tokens}
+      </text>
+    )
+  }
+
+  return TOKEN_LAYOUTS[tokens].map(([dx, dy], index) => (
     <circle key={index} cx={dx} cy={dy} r={5} className="token" />
   ))
 }
@@ -45,7 +68,7 @@ export default function PlaceNode({
       onPointerUp={onPointerUp}
     >
       <circle r={PLACE_RADIUS} className="place__circle" />
-      <Tokens count={place.tokens} />
+      <Tokens place={place} />
       <text y={PLACE_RADIUS + 18} textAnchor="middle" className="node__label">
         {place.label}
       </text>

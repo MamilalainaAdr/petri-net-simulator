@@ -3,6 +3,7 @@ import { ZoomIn, ZoomOut } from 'lucide-react'
 import PlaceNode from './PlaceNode'
 import TransitionNode from './TransitionNode'
 import Arc from './Arc'
+import Tooltip from './Tooltip'
 import { getTransitionAttachment, PLACE_RADIUS } from '../utils/petriNet'
 
 const ZOOM_MIN = 0.4
@@ -185,6 +186,9 @@ export default function Playground({
     }
   }
 
+  const canZoomIn = zoom < ZOOM_MAX
+  const canZoomOut = zoom > ZOOM_MIN
+
   return (
     <div className="playground">
       <svg
@@ -282,26 +286,32 @@ export default function Playground({
       </svg>
 
       <div className="playground__zoom">
-        <button
-          type="button"
-          className="btn btn--icon"
-          onClick={() => setZoom((z) => Math.max(ZOOM_MIN, +(z - ZOOM_STEP).toFixed(2)))}
-          disabled={zoom <= ZOOM_MIN}
-          data-tooltip="Zoom arrière"
-          aria-label="Zoom arrière"
-        >
-          <ZoomOut size={16} />
-        </button>
-        <button
-          type="button"
-          className="btn btn--icon"
-          onClick={() => setZoom((z) => Math.min(ZOOM_MAX, +(z + ZOOM_STEP).toFixed(2)))}
-          disabled={zoom >= ZOOM_MAX}
-          data-tooltip="Zoom avant"
-          aria-label="Zoom avant"
-        >
-          <ZoomIn size={16} />
-        </button>
+        <Tooltip content="Zoom arrière" position="top">
+          <button
+            type="button"
+            className="btn btn--icon"
+            onClick={() =>
+              setZoom((z) => Math.max(ZOOM_MIN, +(z - ZOOM_STEP).toFixed(2)))
+            }
+            disabled={!canZoomOut}
+            aria-label="Zoom arrière"
+          >
+            <ZoomOut size={16} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Zoom avant" position="top">
+          <button
+            type="button"
+            className="btn btn--icon"
+            onClick={() =>
+              setZoom((z) => Math.min(ZOOM_MAX, +(z + ZOOM_STEP).toFixed(2)))
+            }
+            disabled={!canZoomIn}
+            aria-label="Zoom avant"
+          >
+            <ZoomIn size={16} />
+          </button>
+        </Tooltip>
       </div>
     </div>
   )

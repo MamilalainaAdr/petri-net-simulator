@@ -4,11 +4,14 @@ import Toolbar from './components/Toolbar'
 import Playground from './components/Playground'
 import Sidebar from './components/Sidebar'
 import Modal from './components/Modal'
+import Tooltip from './components/Tooltip'
 import {
   createId,
   fireTransition,
   getEnabledTransitions,
+  isInfiniteMarking,
   isTransitionEnabled,
+  resolveInitialTokens,
 } from './utils/petriNet'
 import { exportProjectToPdf } from './utils/exportPdf'
 
@@ -87,6 +90,20 @@ function WeightDialog({ initial, onClose, onConfirm }) {
   )
 }
 
+function MessageDialog({ title, message, onClose }) {
+  return (
+    <Modal
+      title={title}
+      onClose={onClose}
+      onConfirm={onClose}
+      confirmLabel="Compris"
+      hideCancel
+    >
+      <p className="modal__text">{message}</p>
+    </Modal>
+  )
+}
+
 // --- App ---
 
 export default function App() {
@@ -114,6 +131,7 @@ export default function App() {
     lastFired: null,
   })
   const [exporting, setExporting] = useState(false)
+  const [exportProgress, setExportProgress] = useState(null)
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT)
@@ -471,15 +489,15 @@ export default function App() {
       const current = docRef.current
       applyDoc({
         ...current,
-        places: current.places.map((p) =>
-          p.id === nodeId
-            ? {
-                ...p,
-                tokens: p.tokens + 1,
-                initialTokens: (p.initialTokens ?? 0) + 1,
-              }
-            : p
-        ),
+        places: current.places.map((p) => {
+          if (p.id !== nodeId) return p
+          if (isInfiniteMarking(p.initialTokens)) return p
+          return {
+            ...p,
+            tokens: p.tokens + 1,
+            initialTokens: (p.initialTokens ?? 0) + 1,
+          }
+        }),
       })
       return
     }
@@ -620,7 +638,7 @@ export default function App() {
     const current = docRef.current
     const newPlaces = current.places.map((p) => ({
       ...p,
-      tokens: p.initialTokens ?? 0,
+      tokens: resolveInitialTokens(p.initialTokens),
     }))
     applyDoc({ ...current, places: newPlaces }, true, true)
     setMessage('Marquage initial restauré')
@@ -640,10 +658,29 @@ export default function App() {
 
   const handleExport = useCallback(async () => {
     if (exporting || !canExport) return
+
+    const hasInfinite = docRef.current.places.some((p) =>
+      isInfiniteMarking(p.initialTokens)
+    )
+    if (hasInfinite) {
+      setModal({
+        type: 'exportError',
+        data: {
+          title: 'Export impossible',
+          message:
+            "Le marquage initial d'une ou plusieurs places utilise la valeur « n » (infini). Veuillez remplacer n par un nombre valide avant d'exporter le projet.",
+        },
+      })
+      return
+    }
+
     setExporting(true)
-    setMessage('Préparation du PDF...')
+    setExportProgress({ value: 0, label: 'Préparation...' })
+    setMessage('')
     try {
-      await exportProjectToPdf(docRef.current)
+      await exportProjectToPdf(docRef.current, {
+        onProgress: (p) => setExportProgress(p),
+      })
       setMessage('Export PDF terminé')
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -651,6 +688,7 @@ export default function App() {
       setMessage("Erreur lors de l'export PDF")
     } finally {
       setExporting(false)
+      setExportProgress(null)
     }
   }, [exporting, canExport])
 
@@ -674,7 +712,9 @@ export default function App() {
         places: current.places.map((p) => {
           if (p.id !== placeId) return p
           const next = { ...p, ...patch }
-          if (touchesMarking) next.tokens = patch.initialTokens
+          if (touchesMarking) {
+            next.tokens = resolveInitialTokens(patch.initialTokens)
+          }
           return next
         }),
       },
@@ -699,6 +739,9 @@ export default function App() {
 
   const canUndo = state.past.length > 0
   const canRedo = state.future.length > 0
+
+  const defaultMessage = `${places.length} place(s) · ${transitions.length} transition(s) · ${arcs.length} arc(s) · ${enabledTransitions.length} franchissable(s)`
+  const progressValue = exportProgress?.value ?? 0
 
   return (
     <div className="app">
@@ -749,37 +792,40 @@ export default function App() {
           style={{ width: sidebarOpen ? sidebarWidth : SIDEBAR_COLLAPSED }}
         >
           <div className="sidebar-shell__header">
-            <button
-              type="button"
-              className="sidebar-toggle"
-              onClick={() => setSidebarOpen((v) => !v)}
-              data-tooltip={
+            <Tooltip
+              content={
                 sidebarOpen ? 'Masquer le panneau' : 'Afficher le panneau'
               }
-              data-tooltip-pos="left"
-              aria-label={
-                sidebarOpen ? 'Masquer le panneau' : 'Afficher le panneau'
-              }
+              position="left"
             >
-              {sidebarOpen ? (
-                <ChevronRight size={16} />
-              ) : (
-                <ChevronLeft size={16} />
-              )}
-            </button>
+              <button
+                type="button"
+                className="sidebar-toggle"
+                onClick={() => setSidebarOpen((v) => !v)}
+                aria-label={
+                  sidebarOpen ? 'Masquer le panneau' : 'Afficher le panneau'
+                }
+              >
+                {sidebarOpen ? (
+                  <ChevronRight size={16} />
+                ) : (
+                  <ChevronLeft size={16} />
+                )}
+              </button>
+            </Tooltip>
 
-            <button
-              type="button"
-              className="sidebar-export"
-              onClick={handleExport}
-              disabled={!canExport || exporting}
-              data-tooltip="Exporter le projet"
-              data-tooltip-pos="left"
-              aria-label="Exporter le projet"
-            >
-              <FileDown size={16} />
-              {sidebarOpen && <span>Exporter</span>}
-            </button>
+            <Tooltip content="Exporter le projet" position="left">
+              <button
+                type="button"
+                className="sidebar-export"
+                onClick={handleExport}
+                disabled={!canExport || exporting}
+                aria-label="Exporter le projet"
+              >
+                <FileDown size={16} />
+                {sidebarOpen && <span>Exporter</span>}
+              </button>
+            </Tooltip>
           </div>
 
           {sidebarOpen && (
@@ -806,10 +852,32 @@ export default function App() {
 
       <footer className="statusbar">
         <span className="statusbar__hint">{HINTS[mode]}</span>
-        <span className="statusbar__message">
-          {message ||
-            `${places.length} place(s) · ${transitions.length} transition(s) · ${arcs.length} arc(s) · ${enabledTransitions.length} franchissable(s)`}
-        </span>
+        {exportProgress ? (
+          <div className="statusbar__progress" aria-live="polite">
+            <span className="statusbar__progress-label">
+              {exportProgress.label}
+            </span>
+            <div
+              className="statusbar__progress-bar"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow={Math.round(progressValue)}
+            >
+              <div
+                className="statusbar__progress-fill"
+                style={{ width: `${progressValue}%` }}
+              />
+            </div>
+            <span className="statusbar__progress-value">
+              {Math.round(progressValue)}%
+            </span>
+          </div>
+        ) : (
+          <span className="statusbar__message">
+            {message || defaultMessage}
+          </span>
+        )}
       </footer>
 
       {modal?.type === 'newPlace' && (
@@ -831,6 +899,13 @@ export default function App() {
           initial={modal.data.initial}
           onClose={() => setModal(null)}
           onConfirm={confirmWeight}
+        />
+      )}
+      {modal?.type === 'exportError' && (
+        <MessageDialog
+          title={modal.data.title}
+          message={modal.data.message}
+          onClose={() => setModal(null)}
         />
       )}
     </div>

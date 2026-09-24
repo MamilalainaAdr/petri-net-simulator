@@ -1,5 +1,7 @@
 export const PLACE_RADIUS = 28
 
+export const INFINITE_TOKENS = 1e12
+
 export function transitionSize(orientation) {
   return orientation === 'LR'
     ? { w: 14, h: 64 }
@@ -10,6 +12,22 @@ let idCounter = 0
 export function createId(prefix) {
   idCounter += 1
   return `${prefix}_${Date.now().toString(36)}_${idCounter}`
+}
+
+/**
+ * Vrai si la valeur de marquage initial est la chaîne "n" (infini).
+ */
+export function isInfiniteMarking(value) {
+  return typeof value === 'string' && value.trim().toLowerCase() === 'n'
+}
+
+/**
+ * Traduit une valeur de marquage initial en nombre exploitable.
+ */
+export function resolveInitialTokens(initialTokens) {
+  if (isInfiniteMarking(initialTokens)) return INFINITE_TOKENS
+  const n = Math.floor(Number(initialTokens))
+  return Number.isFinite(n) && n >= 0 ? n : 0
 }
 
 /**
@@ -36,11 +54,6 @@ export function getEdgePoint(node, toward, orientation) {
   return { x: node.x + ux * t, y: node.y + uy * t }
 }
 
-/**
- * Point d'attachement d'un arc sur une transition.
- * - `in`  : la flèche arrive sur la face d'entrée (gauche en LR, haut en TB)
- * - `out` : la flèche part de la face de sortie (droite en LR, bas en TB)
- */
 export function getTransitionAttachment(transition, orientation, direction) {
   const { w, h } = transitionSize(orientation)
   const hw = w / 2
@@ -56,10 +69,6 @@ export function getTransitionAttachment(transition, orientation, direction) {
     : { x: transition.x, y: transition.y + hh }
 }
 
-/**
- * Calcule la géométrie d'un arc : extrémités + point de contrôle
- * de la courbe quadratique (permet la déformation via `arc.bend`).
- */
 export function computeArcGeometry(arc, source, target, orientation) {
   let start, end
 

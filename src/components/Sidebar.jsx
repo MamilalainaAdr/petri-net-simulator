@@ -37,26 +37,37 @@ function EditableText({
   )
 }
 
-function EditableNumber({ value, onChange, min = 0 }) {
+/**
+ * Champ de marquage initial acceptant un entier ou la valeur "n"
+ * (infinie).
+ */
+function EditableMarking({ value, onChange }) {
   const [local, setLocal] = useState(String(value ?? 0))
   useEffect(() => setLocal(String(value ?? 0)), [value])
 
   const commit = () => {
-    const n = Math.max(min, Math.floor(Number(local)) || 0)
+    const trimmed = local.trim()
+    if (trimmed.toLowerCase() === 'n') {
+      if (value !== 'n') onChange('n')
+      else setLocal('n')
+      return
+    }
+    const n = Math.max(0, Math.floor(Number(trimmed)) || 0)
     if (n !== value) onChange(n)
     else setLocal(String(value ?? 0))
   }
 
   return (
     <input
-      type="number"
-      min={min}
+      type="text"
+      inputMode="text"
       value={local}
       onChange={(e) => setLocal(e.target.value)}
       onBlur={commit}
       onKeyDown={(e) => {
         if (e.key === 'Enter') e.currentTarget.blur()
       }}
+      placeholder="0 ou n"
     />
   )
 }
@@ -127,10 +138,9 @@ export default function Sidebar({
                     />
                   </td>
                   <td className="cell-number">
-                    <EditableNumber
+                    <EditableMarking
                       value={p.initialTokens ?? 0}
                       onChange={(v) => onPlaceChange(p.id, { initialTokens: v })}
-                      min={0}
                     />
                   </td>
                 </tr>
