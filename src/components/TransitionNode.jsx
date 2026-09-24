@@ -1,7 +1,8 @@
-import { TRANSITION_W, TRANSITION_H } from '../utils/petriNet'
+import { transitionSize } from '../utils/petriNet'
 
 export default function TransitionNode({
   transition,
+  orientation,
   mode,
   isArcSource,
   isEnabled,
@@ -10,6 +11,12 @@ export default function TransitionNode({
   onPointerMove,
   onPointerUp,
 }) {
+  const { w, h } = transitionSize(orientation)
+  const hw = w / 2
+  const hh = h / 2
+  const hitW = Math.max(w + 30, 44)
+  const hitH = Math.max(h + 30, 44)
+
   const classes = ['node', 'node--transition']
   if (isArcSource) classes.push('is-source')
   if (isEnabled) classes.push('is-enabled')
@@ -24,23 +31,22 @@ export default function TransitionNode({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
     >
-      {/* Zone cliquable élargie */}
       <rect
-        x={-22}
-        y={-TRANSITION_H / 2 - 6}
-        width={44}
-        height={TRANSITION_H + 12}
+        x={-hitW / 2}
+        y={-hitH / 2}
+        width={hitW}
+        height={hitH}
         fill="transparent"
       />
       <rect
-        x={-TRANSITION_W / 2}
-        y={-TRANSITION_H / 2}
-        width={TRANSITION_W}
-        height={TRANSITION_H}
+        x={-hw}
+        y={-hh}
+        width={w}
+        height={h}
         rx={2}
         className="transition__bar"
       />
-      <text y={TRANSITION_H / 2 + 20} textAnchor="middle" className="node__label">
+      <text y={hh + 20} textAnchor="middle" className="node__label">
         {transition.label}
       </text>
     </g>

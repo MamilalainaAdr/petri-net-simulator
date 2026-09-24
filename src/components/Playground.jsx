@@ -2,12 +2,13 @@ import { useMemo, useRef, useState } from 'react'
 import PlaceNode from './PlaceNode'
 import TransitionNode from './TransitionNode'
 import Arc from './Arc'
-import { getEdgePoint } from '../utils/petriNet'
+import { getTransitionAttachment, PLACE_RADIUS } from '../utils/petriNet'
 
 export default function Playground({
   places,
   transitions,
   arcs,
+  orientation,
   mode,
   arcSource,
   enabledIds,
@@ -16,9 +17,14 @@ export default function Playground({
   onNodeClick,
   onMoveNode,
   onDeleteArc,
+  onEditArcWeight,
+  onBendChange,
+  onEditBegin,
+  onEditEnd,
 }) {
   const svgRef = useRef(null)
   const dragRef = useRef(null)
+  const bendRef = useRef(null)
   const [hoverPoint, setHoverPoint] = useState(null)
 
   const nodeMap = useMemo(() => {
@@ -65,23 +71,81 @@ export default function Playground({
   }
 
   const handleNodePointerMove = (e) => {
-    const drag = dragRef.current
-    if (!drag) return
+    const d = dragRef.current
+    if (!d) return
     const p = pointFromEvent(e)
-    if (!drag.moved && Math.hypot(p.x - drag.startX, p.y - drag.startY) > 3) {
-      drag.moved = true
+    if (!d.moved && Math.hypot(p.x - d.startX, p.y - d.startY) > 3) {
+      d.moved = true
+      onEditBegin()
     }
-    if (drag.moved) {
-      onMoveNode(drag.nodeType, drag.nodeId, p.x - drag.offsetX, p.y - drag.offsetY)
+    if (d.moved) {
+      onMoveNode(d.nodeType, d.nodeId, p.x - d.offsetX, p.y - d.offsetY)
     }
   }
 
   const handleNodePointerUp = () => {
-    const drag = dragRef.current
-    if (!drag) return
+    const d = dragRef.current
+    if (!d) return
     dragRef.current = null
-    if (!drag.moved) {
-      onNodeClick(drag.nodeType, drag.nodeId)
+    if (!d.moved) {
+      onNodeClick(d.nodeType, d.nodeId)
+    } else {
+      onEditEnd()
+    }
+  }
+
+  const handleWeightPointerDown = (e, arcId) => {
+    if (e.button !== 0) return
+    if (mode !== 'select') return
+    e.stopPropagation()
+    const p = pointFromEvent(e)
+    bendRef.current = {
+      arcId,
+      startX: p.x,
+      startY: p.y,
+      moved: false,
+    }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const handleWeightPointerMove = (e) => {
+    const d = bendRef.current
+    if (!d) return
+    const p = pointFromEvent(e)
+    if (!d.moved && Math.hypot(p.x - d.startX, p.y - d.startY) > 4) {
+      d.moved = true
+      onEditBegin()
+    }
+    if (!d.moved) return
+
+    const arc = arcs.find((a) => a.id === d.arcId)
+    if (!arc) return
+    const source = nodeMap.get(arc.from)
+    const target = nodeMap.get(arc.to)
+    if (!source || !target) return
+
+    const mx = (source.x + target.x) / 2
+    const my = (source.y + target.y) / 2
+    const dx = target.x - source.x
+    const dy = target.y - source.y
+    const len = Math.hypot(dx, dy) || 1
+    const px = -dy / len
+    const py = dx / len
+    const vx = p.x - mx
+    const vy = p.y - my
+    const bend = vx * px + vy * py
+    onBendChange(d.arcId, bend)
+  }
+
+  const handleWeightPointerUp = () => {
+    const d = bendRef.current
+    if (!d) return
+    bendRef.current = null
+    if (d.moved) {
+      onEditEnd()
+    } else {
+      onEditEnd()
+      onEditArcWeight(d.arcId)
     }
   }
 
@@ -95,6 +159,22 @@ export default function Playground({
   }
 
   const arcSourceNode = arcSource ? nodeMap.get(arcSource.id) : null
+  let previewStart = null
+  let previewEnd = null
+  if (arcSourceNode && hoverPoint) {
+    previewEnd = hoverPoint
+    if (arcSourceNode.type === 'place') {
+      const dx = previewEnd.x - arcSourceNode.x
+      const dy = previewEnd.y - arcSourceNode.y
+      const d = Math.hypot(dx, dy) || 1
+      previewStart = {
+        x: arcSourceNode.x + (dx / d) * PLACE_RADIUS,
+        y: arcSourceNode.y + (dy / d) * PLACE_RADIUS,
+      }
+    } else {
+      previewStart = getTransitionAttachment(arcSourceNode, orientation, 'out')
+    }
+  }
 
   return (
     <div className="playground">
@@ -139,19 +219,23 @@ export default function Playground({
                 arc={arc}
                 source={source}
                 target={target}
+                orientation={orientation}
                 mode={mode}
                 onDelete={onDeleteArc}
+                onWeightPointerDown={handleWeightPointerDown}
+                onWeightPointerMove={handleWeightPointerMove}
+                onWeightPointerUp={handleWeightPointerUp}
               />
             )
           })}
 
-          {arcSourceNode && hoverPoint && (
+          {previewStart && previewEnd && (
             <line
               className="arc__preview"
-              x1={getEdgePoint(arcSourceNode, hoverPoint).x}
-              y1={getEdgePoint(arcSourceNode, hoverPoint).y}
-              x2={hoverPoint.x}
-              y2={hoverPoint.y}
+              x1={previewStart.x}
+              y1={previewStart.y}
+              x2={previewEnd.x}
+              y2={previewEnd.y}
             />
           )}
         </g>
@@ -173,6 +257,7 @@ export default function Playground({
             <TransitionNode
               key={transition.id}
               transition={transition}
+              orientation={orientation}
               mode={mode}
               isArcSource={arcSource?.id === transition.id}
               isEnabled={enabledIds.has(transition.id)}

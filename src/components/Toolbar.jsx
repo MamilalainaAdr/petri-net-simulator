@@ -10,6 +10,13 @@ import {
   StepForward,
   RotateCcw,
   Eraser,
+  Undo2,
+  Redo2,
+  ChevronLeft,
+  ChevronRight,
+  X as XIcon,
+  ArrowRightLeft,
+  ArrowUpDown,
 } from 'lucide-react'
 
 const MODES = [
@@ -24,16 +31,27 @@ const MODES = [
 export default function Toolbar({
   mode,
   onModeChange,
+  orientation,
+  onOrientationChange,
   isPlaying,
   onPlayPause,
-  onStep,
+  stepMode,
+  onStepEnter,
+  onStepPrev,
+  onStepNext,
+  onStepExit,
+  canStep,
+  canStepPrev,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
   onReset,
   onClear,
-  canStep,
 }) {
   return (
     <header className="toolbar">
-      <div className="toolbar__brand">RDP Simulator</div>
+      <div className="toolbar__brand">Simulateur RDP</div>
 
       <div className="toolbar__group">
         {MODES.map((m) => {
@@ -54,28 +72,116 @@ export default function Toolbar({
         })}
       </div>
 
-      <div className="toolbar__group toolbar__group--right">
-        <button type="button" className="btn" onClick={onPlayPause}>
-          {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-          <span>{isPlaying ? 'Pause' : 'Play'}</span>
+      <div className="toolbar__group">
+        <span className="toolbar__label">Orientation</span>
+        <button
+          type="button"
+          className={`btn ${orientation === 'LR' ? 'is-active' : ''}`}
+          onClick={() => onOrientationChange('LR')}
+          title="Graphe orienté gauche à droite"
+        >
+          <ArrowRightLeft size={16} />
+          <span>LR</span>
         </button>
+        <button
+          type="button"
+          className={`btn ${orientation === 'TB' ? 'is-active' : ''}`}
+          onClick={() => onOrientationChange('TB')}
+          title="Graphe orienté de haut en bas"
+        >
+          <ArrowUpDown size={16} />
+          <span>TB</span>
+        </button>
+      </div>
 
+      <div className="toolbar__group toolbar__group--right">
         <button
           type="button"
           className="btn"
-          onClick={onStep}
-          disabled={isPlaying || !canStep}
+          onClick={onUndo}
+          disabled={!canUndo}
+          title="Annuler la dernière action (Ctrl+Z)"
         >
-          <StepForward size={16} />
-          <span>Étape</span>
+          <Undo2 size={16} />
+          <span>Annuler</span>
+        </button>
+        <button
+          type="button"
+          className="btn"
+          onClick={onRedo}
+          disabled={!canRedo}
+          title="Rétablir l'action annulée (Ctrl+Y)"
+        >
+          <Redo2 size={16} />
+          <span>Refaire</span>
         </button>
 
-        <button type="button" className="btn" onClick={onReset}>
+        <div className="toolbar__separator" />
+
+        {stepMode ? (
+          <>
+            <button
+              type="button"
+              className="btn"
+              onClick={onStepPrev}
+              disabled={!canStepPrev}
+              title="Revenir à l'étape précédente"
+            >
+              <ChevronLeft size={16} />
+              <span>Précédent</span>
+            </button>
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={onStepNext}
+              disabled={!canStep}
+              title="Franchir la transition suivante"
+            >
+              <ChevronRight size={16} />
+              <span>Suivant</span>
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={onStepExit}
+              title="Quitter le mode pas à pas"
+            >
+              <XIcon size={16} />
+              <span>Quitter</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="btn"
+              onClick={onPlayPause}
+              disabled={!isPlaying && !canStep}
+              title="Lancer ou mettre en pause la simulation"
+            >
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+              <span>{isPlaying ? 'Pause' : 'Play'}</span>
+            </button>
+            <button
+              type="button"
+              className="btn"
+              onClick={onStepEnter}
+              disabled={!canStep}
+              title="Lancer en mode pas à pas"
+            >
+              <StepForward size={16} />
+              <span>Étape</span>
+            </button>
+          </>
+        )}
+
+        <div className="toolbar__separator" />
+
+        <button type="button" className="btn" onClick={onReset} title="Restaurer le marquage initial">
           <RotateCcw size={16} />
           <span>Reset</span>
         </button>
-
-        <button type="button" className="btn btn--danger" onClick={onClear}>
+        <button type="button" className="btn btn--danger" onClick={onClear} title="Vider le canevas">
           <Eraser size={16} />
           <span>Vider</span>
         </button>
