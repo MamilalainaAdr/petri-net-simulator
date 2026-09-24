@@ -1,0 +1,269 @@
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1f232c;
+  --panel-3: #262b36;
+  --border: #2a2f3a;
+  --text: #e6e8ee;
+  --muted: #8a92a6;
+  --accent: #4f8cff;
+  --accent-soft: rgba(79, 140, 255, 0.16);
+  --accent-2: #22c55e;
+  --danger: #ef4444;
+  --token: #f59e0b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ---------------- Toolbar ---------------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.toolbar__brand {
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+
+.toolbar__group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.toolbar__group--right {
+  margin-left: auto;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--panel-3);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: #cddfff;
+}
+
+.btn--danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  color: #ffc9c9;
+}
+
+/* ---------------- Playground ---------------- */
+
+.playground {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.playground__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  touch-action: none;
+}
+
+.playground__svg.mode-select {
+  cursor: default;
+}
+
+.playground__svg.mode-place,
+.playground__svg.mode-transition,
+.playground__svg.mode-arc {
+  cursor: crosshair;
+}
+
+.playground__svg.mode-token {
+  cursor: pointer;
+}
+
+.playground__svg.mode-delete {
+  cursor: not-allowed;
+}
+
+.playground__bg {
+  fill: var(--bg);
+}
+
+/* ---------------- Places ---------------- */
+
+.place__circle {
+  fill: #1b2029;
+  stroke: #5a6478;
+  stroke-width: 2;
+  transition: stroke 0.15s, fill 0.15s;
+}
+
+.node--place:hover .place__circle {
+  stroke: var(--accent);
+}
+
+.node--place.is-source .place__circle {
+  stroke: var(--accent-2);
+  stroke-dasharray: 5 4;
+}
+
+.token {
+  fill: var(--token);
+  pointer-events: none;
+}
+
+.place__token-count {
+  fill: var(--token);
+  font-size: 16px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* ---------------- Transitions ---------------- */
+
+.transition__bar {
+  fill: #39414f;
+  stroke: #5a6478;
+  stroke-width: 2;
+  transition: fill 0.15s, stroke 0.15s;
+}
+
+.node--transition.is-enabled .transition__bar {
+  fill: var(--accent-2);
+  stroke: #86efac;
+}
+
+.node--transition.is-fired .transition__bar {
+  fill: var(--accent);
+  stroke: #bcd4ff;
+}
+
+.node--transition.is-source .transition__bar {
+  stroke: var(--accent-2);
+  stroke-dasharray: 5 4;
+}
+
+.node__label {
+  fill: var(--muted);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* ---------------- Arcs ---------------- */
+
+.arc__line {
+  stroke: #6b7488;
+  stroke-width: 2;
+  fill: none;
+  pointer-events: none;
+}
+
+.arc__arrow {
+  fill: #6b7488;
+}
+
+.arc__hit {
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: none;
+}
+
+.arc--deletable .arc__hit {
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.arc--deletable .arc__line {
+  stroke: var(--danger);
+}
+
+.arc--deletable .arc__arrow {
+  fill: var(--danger);
+}
+
+.arc__preview {
+  stroke: var(--accent-2);
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+  pointer-events: none;
+}
+
+/* ---------------- Status bar ---------------- */
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 34px;
+}
+
+.statusbar__hint {
+  color: var(--muted);
+}
+
+.statusbar__message {
+  color: var(--text);
+  text-align: right;
+}
