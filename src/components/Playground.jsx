@@ -57,15 +57,11 @@ export default function Playground({
     }
   }
 
-  // ---------------- Fond : clic de création + pan ----------------
-
   const handleBackgroundPointerDown = (e) => {
     if (e.button !== 0) return
-    const startX = e.clientX
-    const startY = e.clientY
     bgRef.current = {
-      startX,
-      startY,
+      startX: e.clientX,
+      startY: e.clientY,
       startPanX: pan.x,
       startPanY: pan.y,
       moved: false,
@@ -104,8 +100,6 @@ export default function Playground({
     setZoom(1)
     setPan({ x: 0, y: 0 })
   }
-
-  // ---------------- Interactions noeuds ----------------
 
   const handleNodePointerDown = (e, nodeType, nodeId) => {
     e.stopPropagation()
@@ -155,8 +149,6 @@ export default function Playground({
       onEditEnd()
     }
   }
-
-  // ---------------- Poignée de poids / courbure ----------------
 
   const handleWeightPointerDown = (e, arcId) => {
     if (e.button !== 0) return
@@ -247,7 +239,7 @@ export default function Playground({
     mode === 'select' ? (panning ? 'grabbing' : 'grab') : undefined
 
   return (
-    <div className="playground">
+    <div className="playground" data-tour="playground">
       <svg
         ref={svgRef}
         className={`playground__svg mode-${mode}`}
@@ -270,7 +262,6 @@ export default function Playground({
           </marker>
         </defs>
 
-        {/* Fond : capte le clic de création et le pan. */}
         <rect
           className="playground__bg"
           x="0"

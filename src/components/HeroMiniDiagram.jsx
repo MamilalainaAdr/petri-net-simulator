@@ -2,44 +2,53 @@ import { useEffect, useState } from 'react'
 
 const CYCLE_MS = 1500
 
-// Layout fixe (coordonnées dans le viewBox 0 0 260 280)
-const P1 = { x: 130, y: 60, r: 28 }
-const T1 = { x: 130, y: 140, w: 64, h: 14 }
-const P2 = { x: 130, y: 220, r: 28 }
+// Layout : P1 (haut) -> T1 (milieu) -> P2 (bas), boucle via arcs retour.
+// Coordonnées dans le viewBox 0 0 260 320.
+const P1 = { x: 130, y: 50, r: 30 }
+const T1 = { x: 130, y: 160, w: 64, h: 14 }
+const P2 = { x: 130, y: 270, r: 30 }
 
-// Arcs : P0 = start, P1 = control, P2 = end (quadratique)
+// Arcs : quadratiques (start, control, end) et point médian pour afficher le poids.
 const ARCS = [
+  // P1 -> T1 (aller gauche)
   {
     id: 'a1',
-    P0: { x: 130, y: 88 },
-    P1: { x: 70, y: 110.5 },
-    P2: { x: 130, y: 133 },
+    P0: { x: 130, y: 80 },
+    P1: { x: 60, y: 120 },
+    P2: { x: 130, y: 153 },
+    mid: { x: 95, y: 120 },
     weight: 1,
-    mid: { x: 100, y: 110.5 },
+    direction: 'in1',
   },
+  // T1 -> P1 (retour droit)
   {
     id: 'a2',
-    P0: { x: 130, y: 133 },
-    P1: { x: 190, y: 110.5 },
-    P2: { x: 130, y: 88 },
+    P0: { x: 130, y: 153 },
+    P1: { x: 200, y: 120 },
+    P2: { x: 130, y: 80 },
+    mid: { x: 165, y: 120 },
     weight: 1,
-    mid: { x: 160, y: 110.5 },
+    direction: 'out1',
   },
+  // T1 -> P2 (aller gauche)
   {
     id: 'a3',
-    P0: { x: 130, y: 147 },
-    P1: { x: 70, y: 169.5 },
-    P2: { x: 130, y: 192 },
+    P0: { x: 130, y: 167 },
+    P1: { x: 60, y: 207 },
+    P2: { x: 130, y: 240 },
+    mid: { x: 95, y: 207 },
     weight: 1,
-    mid: { x: 100, y: 169.5 },
+    direction: 'out2',
   },
+  // P2 -> T1 (retour droit)
   {
     id: 'a4',
-    P0: { x: 130, y: 192 },
-    P1: { x: 190, y: 169.5 },
-    P2: { x: 130, y: 147 },
+    P0: { x: 130, y: 240 },
+    P1: { x: 200, y: 207 },
+    P2: { x: 130, y: 167 },
+    mid: { x: 165, y: 207 },
     weight: 1,
-    mid: { x: 160, y: 169.5 },
+    direction: 'in2',
   },
 ]
 
@@ -74,28 +83,28 @@ export default function HeroMiniDiagram() {
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  // Positions des jetons animés
-  let tokenA = null
-  let tokenB = null
+  let tokenP1 = null
+  let tokenP2 = null
+
   if (progress < 0.5) {
+    // Phase 1 : P1 -> T1 et P2 -> T1
     const t = easeInOutCubic(progress * 2)
-    // Phase 1 : P1 -> T1 (a1) et P2 -> T1 (a4)
-    tokenA = quadBezier(ARCS[0].P0, ARCS[0].P1, ARCS[0].P2, t)
-    tokenB = quadBezier(ARCS[3].P0, ARCS[3].P1, ARCS[3].P2, t)
+    tokenP1 = quadBezier(ARCS[0].P0, ARCS[0].P1, ARCS[0].P2, t)
+    tokenP2 = quadBezier(ARCS[3].P0, ARCS[3].P1, ARCS[3].P2, t)
   } else {
+    // Phase 2 : T1 -> P1 et T1 -> P2
     const t = easeInOutCubic((progress - 0.5) * 2)
-    // Phase 2 : T1 -> P1 (a2) et T1 -> P2 (a3)
-    tokenA = quadBezier(ARCS[1].P0, ARCS[1].P1, ARCS[1].P2, t)
-    tokenB = quadBezier(ARCS[2].P0, ARCS[2].P1, ARCS[2].P2, t)
+    tokenP1 = quadBezier(ARCS[1].P0, ARCS[1].P1, ARCS[1].P2, t)
+    tokenP2 = quadBezier(ARCS[2].P0, ARCS[2].P1, ARCS[2].P2, t)
   }
 
   return (
     <svg
       className="hero-mini"
-      viewBox="0 0 260 280"
+      viewBox="0 0 260 320"
       preserveAspectRatio="xMidYMid meet"
       role="img"
-      aria-label="Aperçu d'un réseau de Pétri simple en boucle"
+      aria-label="Aperçu d'un réseau de Pétri en boucle"
     >
       <defs>
         <marker
@@ -103,8 +112,8 @@ export default function HeroMiniDiagram() {
           viewBox="0 0 10 10"
           refX="10"
           refY="5"
-          markerWidth="8"
-          markerHeight="8"
+          markerWidth="9"
+          markerHeight="9"
           orient="auto"
         >
           <path d="M 0 0 L 10 5 L 0 10 z" className="hero-mini-arrow" />
@@ -145,43 +154,45 @@ export default function HeroMiniDiagram() {
         rx={2}
         className="hero-mini-transition"
       />
-      <text x={T1.x} y={T1.y + 28} textAnchor="middle" className="hero-mini-label">
+      <text x={T1.x + 44} y={T1.y + 4} textAnchor="start" className="hero-mini-label">
         T1
       </text>
 
-      {/* Places P1, P2 */}
+      {/* Place P1 */}
       <g>
         <circle cx={P1.x} cy={P1.y} r={P1.r} className="hero-mini-place" />
-        <text x={P1.x} y={P1.y + 4} textAnchor="middle" className="hero-mini-token">
+        <text x={P1.x} y={P1.y + 5} textAnchor="middle" className="hero-mini-token">
           n
         </text>
-        <text x={P1.x} y={P1.y + 46} textAnchor="middle" className="hero-mini-label">
+        <text x={P1.x - 46} y={P1.y + 4} textAnchor="middle" className="hero-mini-label">
           P1
         </text>
       </g>
+
+      {/* Place P2 */}
       <g>
         <circle cx={P2.x} cy={P2.y} r={P2.r} className="hero-mini-place" />
-        <text x={P2.x} y={P2.y + 4} textAnchor="middle" className="hero-mini-token">
+        <text x={P2.x} y={P2.y + 5} textAnchor="middle" className="hero-mini-token">
           n
         </text>
-        <text x={P2.x} y={P2.y + 46} textAnchor="middle" className="hero-mini-label">
+        <text x={P2.x - 46} y={P2.y + 4} textAnchor="middle" className="hero-mini-label">
           P2
         </text>
       </g>
 
       {/* Jetons animés */}
-      {tokenA && (
+      {tokenP1 && (
         <circle
-          cx={tokenA.x}
-          cy={tokenA.y}
+          cx={tokenP1.x}
+          cy={tokenP1.y}
           r={6}
           className="hero-mini-anim-token"
         />
       )}
-      {tokenB && (
+      {tokenP2 && (
         <circle
-          cx={tokenB.x}
-          cy={tokenB.y}
+          cx={tokenP2.x}
+          cy={tokenP2.y}
           r={6}
           className="hero-mini-anim-token"
         />

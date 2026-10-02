@@ -116,7 +116,7 @@ function MessageDialog({ title, message, onClose }) {
 
 // --- Simulator (route /simulator) ---
 
-function Simulator() {
+function Simulator({ theme, onThemeToggle }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [state, setState] = useState({
@@ -150,29 +150,22 @@ function Simulator() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT)
 
-  const [theme, setTheme] = useLocalStorage('rdp-theme', 'dark')
   const [animDuration, setAnimDuration] = useLocalStorage('rdp-anim-duration', 3)
 
   const { places, transitions, arcs, orientation, project } = doc
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-  }, [theme])
-
   // --------- Chargement du projet de démonstration ---------
-  // Dépend de location.search pour se déclencher à chaque navigation.
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const demoKey = params.get('demo')
     if (!demoKey) return
 
-    const project = DEMO_PROJECTS[demoKey]
-    if (!project) return
+    const demoDoc = DEMO_PROJECTS[demoKey]
+    if (!demoDoc) return
 
-    // Copie profonde pour ne pas muter la constante
-    const demoDoc = JSON.parse(JSON.stringify(project))
-    docRef.current = demoDoc
-    setState({ doc: demoDoc, past: [], future: [] })
+    const cloned = JSON.parse(JSON.stringify(demoDoc))
+    docRef.current = cloned
+    setState({ doc: cloned, past: [], future: [] })
     setSim({
       running: false,
       stepMode: false,
@@ -181,10 +174,9 @@ function Simulator() {
       lastFired: null,
     })
     setActiveAnimation(null)
-    setMessage(`Projet de démonstration « ${demoDoc.project.name} » chargé`)
+    setMessage(`Projet de démonstration « ${cloned.project.name} » chargé`)
     setShowOnboarding(true)
 
-    // Nettoie l'URL pour éviter un rechargement en boucle
     navigate('/simulator', { replace: true })
   }, [location.search, navigate])
 
@@ -257,8 +249,6 @@ function Simulator() {
     setMessage('Action rétablie')
   }, [resetSim])
 
-  // --------- Raccourcis clavier ---------
-
   useEffect(() => {
     const onKey = (e) => {
       const tag = e.target?.tagName
@@ -277,8 +267,6 @@ function Simulator() {
     return () => window.removeEventListener('keydown', onKey)
   }, [undo, redo])
 
-  // --------- Extinction du flash ---------
-
   useEffect(() => {
     if (!sim.lastFired) return
     const id = sim.lastFired.id
@@ -287,8 +275,6 @@ function Simulator() {
     }, FIRE_FLASH)
     return () => clearTimeout(t)
   }, [sim.lastFired])
-
-  // --------- Drag helpers ---------
 
   const dragBeforeRef = useRef(null)
   const beginEdit = useCallback(() => {
@@ -304,8 +290,6 @@ function Simulator() {
       future: [],
     }))
   }, [])
-
-  // --------- Resize sidebar ---------
 
   const handleSidebarResizer = useCallback(
     (e) => {
@@ -329,8 +313,6 @@ function Simulator() {
     },
     [sidebarWidth]
   )
-
-  // --------- Simulation ---------
 
   const snapshotTokens = (placesList) => {
     const tokens = {}
@@ -447,8 +429,6 @@ function Simulator() {
     }, stepDelayMs)
     return () => clearTimeout(t)
   }, [sim.running, sim.index, doStepNext, stepDelayMs])
-
-  // --------- Actions UI ---------
 
   const handleModeChange = (next) => {
     setMode(next)
@@ -618,8 +598,6 @@ function Simulator() {
     }
   }
 
-  // --------- Modales : confirmations ---------
-
   const confirmNewPlace = (description) => {
     const current = docRef.current
     const { x, y } = modal.data
@@ -671,8 +649,6 @@ function Simulator() {
     setModal(null)
     setMessage(`Poids de l'arc modifié : ${weight}`)
   }
-
-  // --------- Simulation : contrôles ---------
 
   const handleStepEnter = () => {
     if (enabledTransitions.length === 0) {
@@ -765,8 +741,6 @@ function Simulator() {
     )
   }, [])
 
-  // --------- Export PDF ---------
-
   const canExport = enabledTransitions.length > 0
 
   const handleExport = useCallback(async () => {
@@ -804,8 +778,6 @@ function Simulator() {
       setExportProgress(null)
     }
   }, [exporting, canExport])
-
-  // --------- Sidebar ---------
 
   const handleProjectChange = (patch) => {
     const current = docRef.current
@@ -879,7 +851,7 @@ function Simulator() {
         onReset={handleReset}
         onClear={handleClear}
         theme={theme}
-        onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        onThemeToggle={onThemeToggle}
         animDuration={animDuration}
         onAnimDurationChange={setAnimDuration}
       />
@@ -909,6 +881,7 @@ function Simulator() {
         <div
           className={`sidebar-shell ${sidebarOpen ? 'is-open' : 'is-collapsed'}`}
           style={{ width: sidebarOpen ? sidebarWidth : SIDEBAR_COLLAPSED }}
+          data-tour="sidebar"
         >
           <div className="sidebar-shell__header">
             <Tooltip
@@ -939,6 +912,7 @@ function Simulator() {
                 className="sidebar-export"
                 onClick={handleExport}
                 disabled={!canExport || exporting}
+                data-tour="export"
                 aria-label="Exporter le projet"
               >
                 <FileDown size={16} />
@@ -1039,13 +1013,30 @@ function Simulator() {
 
 export default function App() {
   const navigate = useNavigate()
+  const [theme, setTheme] = useLocalStorage('rdp-theme', 'dark')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark')
+
   return (
     <Routes>
       <Route
         path="/"
-        element={<LandingPage onStart={() => navigate('/simulator')} />}
+        element={
+          <LandingPage
+            theme={theme}
+            onThemeToggle={toggleTheme}
+            onStart={() => navigate('/simulator')}
+          />
+        }
       />
-      <Route path="/simulator" element={<Simulator />} />
+      <Route
+        path="/simulator"
+        element={<Simulator theme={theme} onThemeToggle={toggleTheme} />}
+      />
     </Routes>
   )
 }

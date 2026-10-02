@@ -7,51 +7,42 @@ PDF.
 ## Fonctionnalités
 
 ### Landing page
-- Navigation sticky avec ancres vers les 4 sections, soulignement actif.
-- **[1] Hero** — accroche + diagramme animé (2 places, 1 transition,
-  marquage initial « n », cycle d'animation 1,5 s, poids des arcs).
-- **[2] Structure** — bloc de code non scrollable et description du modèle.
-- **[3] Fonctionnalités** — 4 cartes centrées.
-- **[4] CTA** — boutons « Ouvrir le simulateur », « Lancer la démo »
-  (charge le distributeur automatique) et « Guide d'utilisation » (ouvre
-  une modale riche avec icônes).
-- Footer : `RDP Simulator` / `v1.0 · année courante · Tous droits réservés`.
+- Navigation sticky : logo cliquable (retour en haut), ancres vers les
+  3 sections suivantes avec soulignement actif, bouton thème clair/sombre.
+- **[1] Hero** — diagramme en boucle P1 (n) ↔ T1 ↔ P2 (n), poids 1 affichés
+  sur les arcs, animation de jetons à 1,5 s.
+- **[2] Structure** — bloc de code non scrollable décrivant le même
+  réseau.
+- **[3] Fonctionnalités** — en-tête aligné à gauche, 4 cartes descriptives.
+- **[4] Modéliser** — bloc centré avec boutons « Ouvrir le simulateur » et
+  « Lancer la démo » (distributeur automatique).
+- Footer : `RDP Simulator` · `v1.0 · année · Tous droits réservés`.
 
 ### Démonstrations pré-chargées
-- `/simulator?demo=hero` — exemple simple (2 places, 1 transition).
+- `/simulator?demo=hero` — boucle simple.
 - `/simulator?demo=vending` — distributeur automatique (8 places,
-  4 transitions).
-- À l'arrivée sur la démo, un **guide interactif étape par étape** (Précédent
-  / Suivant / C'est compris / Passer) décrit le rôle des éléments de l'UI.
+  4 transitions), layout aligné sur le PDF de référence (flux vertical
+  principal avec boucles latérales).
+- À l'ouverture d'une démo, un **tour guidé** s'affiche :
+  - Composant ciblé surligné par un spotlight.
+  - Card centrée à l'écran avec Précédent / Suivant / C'est compris /
+    Passer.
 
-### Édition du graphe
-- Ajout de places / transitions avec description obligatoire.
-- Arcs orientés pondérés, courbables.
-- Déplacement des noeuds, pan du canevas, zoom.
-- Suppression de noeuds et d'arcs.
-- Orientation LR / HB.
-- Marquage initial entier ou « n » (infini).
+### Éditeur
+- Barre d'outils avec marque cliquable (retour au landing).
+- Groupes **Objets**, **Affichage**, **Actions** encadrés.
+- Thème sombre / clair partagé entre landing et simulateur.
+- Durée d'animation (0,5 s à 8 s), préférence persistée.
 
 ### Simulation
 - Play / Pause, mode pas à pas, Reset, Vider.
-- Animation interpolée des jetons **le long de la courbe exacte** des arcs
-  (droits ou courbés), via une Bézier quadratique.
-- Durée d'animation configurable (0,5 s à 8 s).
-
-### Documentation (side panel)
-- Nom du projet, description, marquage initial.
-- Tableaux des places et transitions générés automatiquement.
-- Panneau pliable et redimensionnable.
+- Animation interpolée des jetons le long de la courbe des arcs.
+- Marquage initial « n » (infini).
 
 ### Export PDF
-- Page 1 : documentation.
-- Pages suivantes : schéma par étape d'exécution.
+- Page 1 documentation + un schéma par étape.
 - A4 paysage si LR sinon portrait.
-- Compression JPEG + zlib agressif.
-- Barre de progression dans la barre de statut.
-
-### Thèmes
-- Mode sombre (défaut) / clair, persisté.
+- Compression JPEG + zlib agressif, barre de progression.
 
 ## Prérequis
 
@@ -61,7 +52,6 @@ PDF.
 ## Installation
 
 ```bash
-cd petri-net-simulator
 npm install
 ```
 
@@ -71,10 +61,10 @@ npm install
 npm run dev
 ```
 
-- `http://localhost:5173/` : landing page.
-- `http://localhost:5173/simulator` : simulateur vide.
-- `http://localhost:5173/simulator?demo=hero` : exemple simple.
-- `http://localhost:5173/simulator?demo=vending` : distributeur automatique.
+- `/` : landing page.
+- `/simulator` : simulateur vide.
+- `/simulator?demo=hero` : exemple simple.
+- `/simulator?demo=vending` : distributeur automatique.
 
 ## Build
 
@@ -116,6 +106,9 @@ petri-net-simulator/
         ├── Modal.jsx
         ├── Tooltip.jsx
         ├── HeroMiniDiagram.jsx
-        ├── GuideModal.jsx
         └── OnboardingTour.jsx
 ```
+
+## Licence
+
+Tous droits réservés.

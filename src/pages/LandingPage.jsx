@@ -7,48 +7,27 @@ import {
   Zap,
   Eye,
   Code,
-  BookOpen,
   Sun,
   Moon,
 } from 'lucide-react'
 import HeroMiniDiagram from '../components/HeroMiniDiagram'
-import GuideModal from '../components/GuideModal'
 
 const APP_VERSION = '1.0'
 
-const DEMO_CODE = `// Distributeur automatique — modèle RDP
+const DEMO_CODE = `// Réseau en boucle : P1 <-> T1 <-> P2
 const net = {
   places: [
-    { id: 'P1', tokens: 1,  description: 'Distributeur_Disponible' },
-    { id: 'P2', tokens: 0,  description: 'Piece_Inseree' },
-    { id: 'P3', tokens: 5,  description: 'Stock_Distributeur' },
-    { id: 'P4', tokens: 0,  description: 'Emplacement_Libre' },
-    { id: 'P5', tokens: 0,  description: 'Boisson_Servie' },
-    { id: 'P6', tokens: 1,  description: 'Reappro_Disponible' },
-    { id: 'P7', tokens: 0,  description: 'Reappro_En_Cours' },
-    { id: 'P8', tokens: 15, description: 'Stock_Entrepot' },
+    { id: 'P1', tokens: 'n' },
+    { id: 'P2', tokens: 'n' },
   ],
   transitions: [
-    { id: 'T1', description: 'Inserer_Piece' },
-    { id: 'T2', description: 'Distribuer_Boisson' },
-    { id: 'T3', description: 'Declencher_Reapprovisionnement' },
-    { id: 'T4', description: 'Terminer_Reapprovisionnement' },
+    { id: 'T1' },
   ],
   arcs: [
     { from: 'P1', to: 'T1', weight: 1 },
     { from: 'T1', to: 'P2', weight: 1 },
-    { from: 'P2', to: 'T2', weight: 1 },
-    { from: 'P3', to: 'T2', weight: 1 },
-    { from: 'T2', to: 'P1', weight: 1 },
-    { from: 'T2', to: 'P4', weight: 1 },
-    { from: 'T2', to: 'P5', weight: 1 },
-    { from: 'P4', to: 'T3', weight: 3 },
-    { from: 'P6', to: 'T3', weight: 1 },
-    { from: 'T3', to: 'P7', weight: 1 },
-    { from: 'P7', to: 'T4', weight: 1 },
-    { from: 'P8', to: 'T4', weight: 3 },
-    { from: 'T4', to: 'P6', weight: 1 },
-    { from: 'T4', to: 'P3', weight: 3 },
+    { from: 'P2', to: 'T1', weight: 1 },
+    { from: 'T1', to: 'P1', weight: 1 },
   ],
 }`
 
@@ -86,17 +65,17 @@ const NAV_ITEMS = [
   { id: 'cta', label: 'Modéliser' },
 ]
 
-export default function LandingPage() {
+export default function LandingPage({ theme, onThemeToggle }) {
   const navigate = useNavigate()
   const currentYear = new Date().getFullYear()
   const [activeSection, setActiveSection] = useState('hero')
-  const [guideOpen, setGuideOpen] = useState(false)
 
   const openSimulator = () => navigate('/simulator')
   const openSimpleDemo = () => navigate('/simulator?demo=hero')
   const openVendingDemo = () => navigate('/simulator?demo=vending')
 
-  // Suivi de la section active pour les ancres
+  const ThemeIcon = theme === 'dark' ? Sun : Moon
+
   useEffect(() => {
     const onScroll = () => {
       const scrollY = window.scrollY + 220
@@ -148,6 +127,20 @@ export default function LandingPage() {
             </button>
           ))}
         </nav>
+
+        <button
+          type="button"
+          className="landing__nav-theme"
+          onClick={onThemeToggle}
+          title={
+            theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
+          }
+          aria-label={
+            theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
+          }
+        >
+          <ThemeIcon size={18} />
+        </button>
 
         <button
           type="button"
@@ -231,9 +224,7 @@ export default function LandingPage() {
                 <span className="landing__dot landing__dot--red" />
                 <span className="landing__dot landing__dot--yellow" />
                 <span className="landing__dot landing__dot--green" />
-                <span className="landing__code-title">
-                  distributeur-rdp.js
-                </span>
+                <span className="landing__code-title">boucle-rdp.js</span>
               </div>
               <pre className="code-snippet code-snippet--fixed">
                 <code>{DEMO_CODE}</code>
@@ -248,7 +239,7 @@ export default function LandingPage() {
           className="landing__section landing__section--features"
         >
           <div className="landing__section-inner">
-            <header className="landing__section-header landing__section-header--center">
+            <header className="landing__section-header">
               <span className="landing__section-eyebrow">Fonctionnalités</span>
               <h2>Tout ce qu'il faut pour un RDP</h2>
               <p>
@@ -299,14 +290,6 @@ export default function LandingPage() {
                 <Play size={16} />
                 Lancer la démo
               </button>
-              <button
-                type="button"
-                className="landing__cta landing__cta--ghost"
-                onClick={() => setGuideOpen(true)}
-              >
-                <BookOpen size={16} />
-                Guide d'utilisation
-              </button>
             </div>
           </div>
         </section>
@@ -318,8 +301,6 @@ export default function LandingPage() {
           v{APP_VERSION} · {currentYear} · Tous droits réservés
         </span>
       </footer>
-
-      {guideOpen && <GuideModal onClose={() => setGuideOpen(false)} />}
     </div>
   )
 }

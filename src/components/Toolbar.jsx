@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import {
   Hand,
   Circle,
@@ -58,16 +59,23 @@ export default function Toolbar({
   animDuration,
   onAnimDurationChange,
 }) {
+  const navigate = useNavigate()
   const ThemeIcon = theme === 'dark' ? Sun : Moon
 
   return (
     <header className="toolbar">
-      <div className="toolbar__brand">
+      <button
+        type="button"
+        className="toolbar__brand"
+        onClick={() => navigate('/')}
+        title="Retour à l'accueil"
+        aria-label="Retour à l'accueil"
+      >
         <GitBranch size={20} />
         <span>RDP Simulator</span>
-      </div>
+      </button>
 
-      <fieldset className="toolbar__group">
+      <fieldset className="toolbar__group" data-tour="toolbar-objs">
         <legend>Objets</legend>
         <div className="toolbar__group-body">
           {MODES.map((m) => {
@@ -92,7 +100,10 @@ export default function Toolbar({
         </div>
       </fieldset>
 
-      <fieldset className="toolbar__group toolbar__group--display">
+      <fieldset
+        className="toolbar__group toolbar__group--display"
+        data-tour="toolbar-display"
+      >
         <legend>Affichage</legend>
         <div className="toolbar__group-body">
           <button
@@ -118,7 +129,10 @@ export default function Toolbar({
         </div>
       </fieldset>
 
-      <fieldset className="toolbar__group toolbar__group--actions">
+      <fieldset
+        className="toolbar__group toolbar__group--actions"
+        data-tour="toolbar-actions"
+      >
         <legend>Actions</legend>
         <div className="toolbar__group-body">
           <label className="toolbar__select" data-tooltip="Durée des animations">
