@@ -1,10 +1,10 @@
 # Simulateur RDP — Réseau de Pétri
 
-Simulateur minimaliste de réseau de Pétri (RDP) dans le navigateur.
-Il permet de construire un diagramme dans un playground (places, transitions,
-arcs pondérés, jetons), de lancer une simulation pas à pas avec visualisation
-du déplacement des jetons, de documenter le projet via un panneau latéral
-redimensionnable, et d'exporter le tout en PDF.
+Simulateur de réseau de Pétri (RDP) dans le navigateur.
+Construction d'un diagramme dans un playground (places, transitions, arcs
+pondérés, jetons), simulation pas à pas avec animation interpolée du
+déplacement des jetons, documentation via un panneau latéral redimensionnable
+et pliable, thème clair / sombre, et export PDF optimisé.
 
 ## Fonctionnalités
 
@@ -21,29 +21,42 @@ redimensionnable, et d'exporter le tout en PDF.
   transition, les flèches sortantes partent toujours de la face de sortie.
 
 ### Playground
-- Zoom avant / arrière via deux boutons loupe en bas au centre.
+- **Pan** : en mode Sélectionner, un clic-glisser sur une zone vide du
+  canevas déplace toute la vue du diagramme (curseur main ouverte /
+  main fermée).
+- **Zoom** avant / arrière via deux boutons loupe en bas au centre.
+- **Recentrage** : bouton Maximize pour restaurer zoom et position.
+- **Création** : un clic simple (sans déplacement > 3 px) sur le fond
+  déclenche l'action du mode courant (placer une place, une transition…).
+  Le seuil distingue un clic d'un pan sans ambiguïté.
+- Les noeuds restent prioritaires sur le fond : cliquer sur une place ou
+  une transition n'initie pas de pan.
 
 ### Marquage initial
 - Le champ de marquage initial de chaque place accepte un entier positif
   ou la lettre `n` (majuscule ou minuscule) pour représenter un marquage
   « infini ».
-- Lorsqu'une place est en mode `n` :
-  - la place affiche `n`, puis `n-1`, `n-2`, … à mesure que la simulation
-    consomme des jetons.
-  - l'ajout manuel de jetons via le mode Jeton est ignoré.
-  - `Reset` restaure la place à l'état `n`.
-- L'export PDF est refusé si une place utilise `n` (voir section Export).
 
-### Historique
-- Boutons Annuler / Refaire dans la barre d'outils.
-- Raccourcis clavier Ctrl+Z et Ctrl+Y (ou Ctrl+Shift+Z).
+### Simulation et animation
+- Bouton **Play / Pause** : exécution automatique.
+- Bouton **Étape** : mode pas à pas avec Précédent / Suivant / Quitter.
+- Bouton **Reset** : restauration du marquage initial.
+- Bouton **Vider** : remise à zéro complète du canevas.
+- **Durée des animations** : sélecteur à côté du bouton Play (valeurs :
+  0.5 s, 1 s, 1.5 s, 2 s, 3 s (défaut), 5 s, 8 s). La durée est persistée
+  entre les sessions et pilote à la fois l'animation des jetons et
+  l'intervalle entre deux franchissements en mode Play.
+- **Animation interpolée des jetons** : lors du franchissement d'une
+  transition, les jetons sont animés depuis les places d'entrée vers la
+  transition (phase 1), puis de la transition vers les places de sortie
+  (phase 2), avec un easing cubic in-out.
 
-### Simulation
-- Play / Pause : exécution automatique (délai de 3 secondes entre étapes).
-- Étape : mode pas à pas avec Précédent / Suivant / Quitter.
-- Reset : restauration du marquage initial.
-- Vider : remise à zéro complète du canevas.
-- Les transitions franchissables sont mises en évidence (vert).
+### Thèmes
+- **Mode sombre (défaut)** et **mode clair**.
+- Bouton de bascule (icône Soleil / Lune) dans la barre d'outils.
+- Préférence persistée dans `localStorage`.
+- Toutes les couleurs de l'interface (panneaux, boutons, noeuds, arcs,
+  jetons, tooltips) s'adaptent au thème actif.
 
 ### Documentation (side panel droit)
 - Nom du projet et description (redimensionnables verticalement).
@@ -54,42 +67,31 @@ redimensionnable, et d'exporter le tout en PDF.
 - Panneau pliable via un bouton (< / >) : replié, il devient une barre
   verticale de 44 px.
 
+### Historique
+- Boutons Annuler / Refaire dans la barre d'outils.
+- Raccourcis clavier Ctrl+Z et Ctrl+Y (ou Ctrl+Shift+Z).
+
 ### Export PDF
 - Bouton Exporter dans le header de la sidebar, visible aussi quand le
-  panneau est replié (icône seule). Étiquette au survol : « Exporter le
-  projet ».
-- Le bouton est actif uniquement lorsque le projet est exécutable (au
-  moins une transition franchissable) — même condition que le bouton Play.
-- **Si le marquage initial contient la valeur `n`**, une modale s'affiche
-  pour prévenir : « Veuillez remplacer n par un nombre valide ».
-- **Contenu du PDF** :
-  - Page 1 : contenu du panneau latéral (nom, description, tableaux).
-  - Pages suivantes : un schéma du diagramme par étape d'exécution, jusqu'à
-    ce qu'aucune transition ne soit franchissable.
+  panneau est replié (icône seule).
+- Actif uniquement lorsque le projet est exécutable (au moins une
+  transition franchissable).
+- Si le marquage initial contient la valeur `n`, l'export est refusé avec
+  une modale d'avertissement.
+- **Contenu** : page 1 = documentation du projet ; pages suivantes = un
+  schéma du diagramme par étape d'exécution.
 - **Format** : A4, paysage si l'affichage est en LR sinon portrait.
-- **Diagramme** : réduit d'un facteur de sécurité (85 % de la zone utile)
-  pour ne jamais déborder ou être rogné, y compris lorsque des arcs sont
-  fortement courbés.
-- **Entête** : nom du projet. **Pied de page** : `Page X / Y`.
-- **Thème** : mode clair, accent bleu (`#4f8cff`), transitions grises,
-  jetons orange.
-- **Barre de progression** : pendant la génération, la barre de statut
-  affiche une barre de progression avec le libellé de l'étape courante
-  (initialisation, rédaction, rendu des diagrammes, entêtes/pieds,
-  finalisation) et le pourcentage d'avancement.
+- **Entête / pied** : nom du projet, numérotation `Page X / Y`.
+- **Compression** : JPEG qualité 72 %, résolution 1×, compression zlib
+  agressive, précision des coordonnées limitée. Le poids final est
+  réduit d'un facteur ~8 à 12 par rapport à la version initiale.
+- **Barre de progression** pendant la génération (libellé d'étape +
+  pourcentage).
 
 ### Barre d'outils
-- Logo GitBranch + « RDP Simulator » sur fond blanc.
-- Groupes encadrés : **Objets**, **Affichage** (LR / HB), **Actions**.
-- Intitulés de groupe en majuscules sur la bordure supérieure.
-
-### Étiquettes au survol (tooltips)
-- Les tooltips de la barre d'outils utilisent un pseudo-élément `::after`.
-- Les tooltips de la sidebar (bouton de repli, bouton Exporter) et du
-  playground (boutons de zoom) utilisent un composant React qui rend le
-  tooltip dans un portail au niveau de `document.body`. Cela garantit
-  l'affichage au-dessus de tout, y compris hors de conteneurs avec
-  `overflow: hidden`.
+- Logo GitBranch + « RDP Simulator » sur fond contrasté.
+- Groupes encadrés : **Objets**, **Affichage** (LR / HB), **Actions**
+  (durée, simulation, historique, reset/vider, thème).
 
 ## Prérequis
 
@@ -130,35 +132,37 @@ npm run preview
 
 | Mode        | Action                                                              |
 | ----------- | ------------------------------------------------------------------- |
-| Sélectionner| Déplacer un noeud, franchir une transition, courber ou éditer un arc |
+| Sélectionner| Déplacer un noeud, franchir une transition, courber un arc, pan     |
 | Place       | Cliquer sur le canevas pour ajouter une place                       |
 | Transition  | Cliquer sur le canevas pour ajouter une transition                  |
 | Arc         | Cliquer sur une place puis sur une transition (ou l'inverse)        |
 | Jeton       | Cliquer sur une place pour ajouter un jeton                         |
 | Supprimer   | Cliquer sur un noeud ou un arc pour le supprimer                    |
 
-### 2. Utiliser le marquage « n »
+### 2. Naviguer dans le playground
 
-Dans le tableau des places du panneau latéral, saisir `n` (ou `N`) dans la
-colonne « Marquage initial ». La place affiche alors `n` sur le diagramme,
-puis `n-1`, `n-2`, … à chaque jeton consommé.
+- **Pan** : cliquer-glisser sur une zone vide (mode Sélectionner).
+- **Zoom** : boutons loupe en bas au centre.
+- **Recentrer** : bouton Maximize à côté des boutons de zoom.
 
-### 3. Exporter en PDF
+### 3. Choisir la durée d'animation
+
+Dans la barre d'outils, groupe Actions, utiliser le sélecteur « Durée »
+à côté du bouton Play. Le choix s'applique immédiatement et est mémorisé.
+
+### 4. Changer de thème
+
+Cliquer sur l'icône Soleil / Lune en bout du groupe Actions.
+
+### 5. Exporter en PDF
 
 Le bouton Exporter est grisé tant qu'aucune transition n'est franchissable.
-S'il est actif, un clic génère un fichier PDF :
+Un clic génère un PDF compressé, avec barre de progression dans la barre
+de statut.
 
-- La barre de statut remplace le message habituel par une barre de
-  progression affichant le pourcentage et l'étape courante.
-- À la fin, le navigateur télécharge un fichier PDF nommé d'après le nom
-  du projet.
-- Si une place utilise `n` dans son marquage initial, une modale s'affiche
-  et l'export est bloqué.
+### 6. Annuler / Refaire
 
-### 4. Annuler / Refaire
-
-- Boutons dédiés dans la barre d'outils.
-- Ctrl+Z pour annuler, Ctrl+Y (ou Ctrl+Shift+Z) pour refaire.
+Ctrl+Z pour annuler, Ctrl+Y (ou Ctrl+Shift+Z) pour refaire.
 
 ## Structure du projet
 
@@ -171,16 +175,20 @@ petri-net-simulator/
 └── src/
     ├── main.jsx                Point d'entrée React
     ├── App.jsx                 État global, historique, orchestration
-    ├── styles.css              Styles globaux
+    ├── styles.css              Styles globaux + thèmes
+    ├── hooks/
+    │   └── useLocalStorage.js  Persistance légère
     ├── utils/
     │   ├── petriNet.js         Logique métier (franchissement, géométrie)
-    │   └── exportPdf.js        Génération du PDF (jsPDF + rendu SVG)
+    │   ├── exportPdf.js        Génération du PDF (jsPDF + rendu SVG)
+    │   └── pdfOptimizer.js     Compression d'image pour le PDF
     └── components/
         ├── Toolbar.jsx         Barre d'outils (lucide-react)
-        ├── Playground.jsx      Canevas SVG, interactions, zoom
+        ├── Playground.jsx      Canevas SVG, pan, zoom, interactions
         ├── PlaceNode.jsx       Rendu d'une place et de ses jetons
         ├── TransitionNode.jsx  Rendu d'une transition
         ├── Arc.jsx             Rendu d'un arc orienté (bézier)
+        ├── AnimatedTokens.jsx  Animation interpolée des jetons
         ├── Sidebar.jsx         Documentation du projet
         ├── Modal.jsx           Modale générique
         └── Tooltip.jsx         Tooltip via portail React
@@ -202,12 +210,11 @@ arc        = { id, from, to, weight, bend }
 - `arc.weight` : poids (entier >= 1), défaut 1.
 - `arc.bend` : décalage perpendiculaire signé du milieu de l'arc, défaut 0.
 
-## Limites du MVP
+## Limites connues
 
 - Une place ne peut pas contenir de capacité maximale.
 - Pas d'export / import de fichier source (uniquement l'export PDF).
 - L'historique ne contient pas plus de 50 actions.
-- Pas d'animation interpolée du déplacement des jetons.
 - L'export PDF est refusé lorsque le marquage initial contient `n`.
 
 ## Stack technique

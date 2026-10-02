@@ -14,6 +14,7 @@ import {
   resolveInitialTokens,
 } from './utils/petriNet'
 import { exportProjectToPdf } from './utils/exportPdf'
+import { useLocalStorage } from './hooks/useLocalStorage'
 
 const INITIAL_DOC = {
   project: { name: 'Sans titre', description: '' },
@@ -25,7 +26,7 @@ const INITIAL_DOC = {
 
 const HINTS = {
   select:
-    "Cliquez sur une transition franchissable pour la déclencher, glissez un noeud pour le déplacer, glissez le poids d'un arc pour le courber.",
+    "Cliquez sur une transition franchissable pour la déclencher, glissez un noeud pour le déplacer, glissez le fond pour déplacer la vue.",
   place: 'Cliquez sur le canevas pour ajouter une place.',
   transition: 'Cliquez sur le canevas pour ajouter une transition.',
   arc: "Cliquez sur une place puis sur une transition (ou l'inverse) pour créer un arc.",
@@ -33,7 +34,6 @@ const HINTS = {
   delete: 'Cliquez sur un noeud ou un arc pour le supprimer.',
 }
 
-const STEP_DELAY = 3000
 const FIRE_FLASH = 400
 
 const SIDEBAR_MIN = 260
@@ -132,11 +132,19 @@ export default function App() {
   })
   const [exporting, setExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(null)
+  const [activeAnimation, setActiveAnimation] = useState(null)
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT)
 
+  const [theme, setTheme] = useLocalStorage('rdp-theme', 'dark')
+  const [animDuration, setAnimDuration] = useLocalStorage('rdp-anim-duration', 3)
+
   const { places, transitions, arcs, orientation, project } = doc
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
 
   const enabledTransitions = useMemo(
     () => getEnabledTransitions(transitions, arcs, places),
@@ -157,6 +165,7 @@ export default function App() {
       index: 0,
       lastFired: null,
     })
+    setActiveAnimation(null)
   }, [])
 
   const applyDoc = useCallback(
@@ -211,7 +220,7 @@ export default function App() {
   useEffect(() => {
     const onKey = (e) => {
       const tag = e.target?.tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
       const meta = e.ctrlKey || e.metaKey
       if (!meta) return
       if (e.key === 'z' && !e.shiftKey) {
@@ -289,6 +298,55 @@ export default function App() {
     return tokens
   }
 
+  const buildAnimation = useCallback(
+    (transition, currentDoc) => {
+      const inputs = currentDoc.arcs
+        .filter((a) => a.to === transition.id)
+        .map((a) => ({
+          place: currentDoc.places.find((p) => p.id === a.from),
+          weight: a.weight ?? 1,
+        }))
+        .filter((x) => x.place)
+      const outputs = currentDoc.arcs
+        .filter((a) => a.from === transition.id)
+        .map((a) => ({
+          place: currentDoc.places.find((p) => p.id === a.to),
+          weight: a.weight ?? 1,
+        }))
+        .filter((x) => x.place)
+
+      return {
+        id: createId('anim'),
+        transitionId: transition.id,
+        transition: { x: transition.x, y: transition.y, type: 'transition' },
+        orientation: currentDoc.orientation,
+        input: inputs,
+        output: outputs,
+        durationMs: Math.max(120, animDuration * 1000),
+      }
+    },
+    [animDuration]
+  )
+
+  const fireTransitionWithAnimation = useCallback(
+    (transition, currentDoc) => {
+      const newPlaces = fireTransition(
+        transition.id,
+        currentDoc.places,
+        currentDoc.arcs
+      )
+      const newDoc = { ...currentDoc, places: newPlaces }
+      docRef.current = newDoc
+
+      setActiveAnimation(buildAnimation(transition, currentDoc))
+      setSim((s) => ({ ...s, lastFired: { id: transition.id, at: Date.now() } }))
+      setState((s) => ({ ...s, doc: newDoc }))
+      setMessage(`Transition ${transition.label} franchie`)
+      return newDoc
+    },
+    [buildAnimation]
+  )
+
   const doStepNext = useCallback(() => {
     const current = docRef.current
     const enabled = getEnabledTransitions(
@@ -299,9 +357,7 @@ export default function App() {
     if (enabled.length === 0) return false
 
     const t = enabled[0]
-    const newPlaces = fireTransition(t.id, current.places, current.arcs)
-    const newDoc = { ...current, places: newPlaces }
-    docRef.current = newDoc
+    const newDoc = fireTransitionWithAnimation(t, current)
 
     setSim((s) => {
       let states = s.states
@@ -312,18 +368,20 @@ export default function App() {
       } else {
         states = states.slice(0, index + 1)
       }
-      states = [...states, { tokens: snapshotTokens(newPlaces), firedId: t.id }]
+      states = [
+        ...states,
+        { tokens: snapshotTokens(newDoc.places), firedId: t.id },
+      ]
       return {
         ...s,
         states,
         index: index + 1,
-        lastFired: { id: t.id, at: Date.now() },
       }
     })
-    setState((s) => ({ ...s, doc: newDoc }))
-    setMessage(`Transition ${t.label} franchie`)
     return true
-  }, [])
+  }, [fireTransitionWithAnimation])
+
+  const stepDelayMs = Math.max(150, animDuration * 1000)
 
   useEffect(() => {
     if (!sim.running) return
@@ -333,9 +391,9 @@ export default function App() {
         setSim((s) => ({ ...s, running: false }))
         setMessage('Aucune transition franchissable, simulation terminée')
       }
-    }, STEP_DELAY)
+    }, stepDelayMs)
     return () => clearTimeout(t)
-  }, [sim.running, sim.index, doStepNext])
+  }, [sim.running, sim.index, doStepNext, stepDelayMs])
 
   // --------- Actions UI ---------
 
@@ -440,12 +498,7 @@ export default function App() {
       setMessage(`Transition ${transition.label} non franchissable`)
       return
     }
-    const newPlaces = fireTransition(transitionId, current.places, current.arcs)
-    const newDoc = { ...current, places: newPlaces }
-    docRef.current = newDoc
-    setSim((s) => ({ ...s, lastFired: { id: transitionId, at: Date.now() } }))
-    setState((s) => ({ ...s, doc: newDoc }))
-    setMessage(`Transition ${transition.label} franchie`)
+    fireTransitionWithAnimation(transition, current)
   }
 
   const handleNodeClick = (nodeType, nodeId) => {
@@ -600,6 +653,7 @@ export default function App() {
     const newDoc = { ...current, places: newPlaces }
     docRef.current = newDoc
     setState((s) => ({ ...s, doc: newDoc }))
+    setActiveAnimation(null)
     setSim((s) => ({ ...s, index: newIndex, lastFired: null }))
     setMessage('Étape précédente')
   }
@@ -651,6 +705,12 @@ export default function App() {
     setModal(null)
     setMessage('Canevas vidé')
   }
+
+  const handleAnimationComplete = useCallback((animationId) => {
+    setActiveAnimation((current) =>
+      current?.id === animationId ? null : current
+    )
+  }, [])
 
   // --------- Export PDF ---------
 
@@ -765,6 +825,10 @@ export default function App() {
         canRedo={canRedo}
         onReset={handleReset}
         onClear={handleClear}
+        theme={theme}
+        onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        animDuration={animDuration}
+        onAnimDurationChange={setAnimDuration}
       />
 
       <div className="app__body">
@@ -777,6 +841,8 @@ export default function App() {
           arcSource={arcSource}
           enabledIds={enabledIds}
           firedId={sim.lastFired?.id ?? null}
+          activeAnimation={activeAnimation}
+          onAnimationComplete={handleAnimationComplete}
           onCanvasClick={handleCanvasClick}
           onNodeClick={handleNodeClick}
           onMoveNode={handleMoveNode}

@@ -1,4 +1,8 @@
-:root {
+/* ==================================================================
+   THÈME SOMBRE (défaut) et variables communes
+   ================================================================== */
+:root,
+[data-theme='dark'] {
   --bg: #0f1115;
   --panel: #171a21;
   --panel-2: #1f232c;
@@ -8,7 +12,6 @@
   --muted: #8a92a6;
   --accent: #4f8cff;
   --accent-soft: rgba(79, 140, 255, 0.16);
-  --accent-2: #22c55e;
   --success: #22c55e;
   --success-soft: rgba(34, 197, 94, 0.16);
   --info: #4f8cff;
@@ -19,6 +22,53 @@
   --danger-soft: rgba(239, 68, 68, 0.16);
   --token: #f59e0b;
   --brand-bg: #ffffff;
+  --brand-fg: #4f8cff;
+  --node-fill: #1b2029;
+  --node-stroke: #5a6478;
+  --transition-fill: #39414f;
+  --transition-stroke: #5a6478;
+  --transition-stroke-enabled: #86efac;
+  --transition-stroke-fired: #bcd4ff;
+  --arc-stroke: #6b7488;
+  --btn-active-text: #cddfff;
+  --tooltip-bg: #262b36;
+  --tooltip-fg: #e6e8ee;
+}
+
+/* ==================================================================
+   THÈME CLAIR
+   ================================================================== */
+[data-theme='light'] {
+  --bg: #f7f8fa;
+  --panel: #ffffff;
+  --panel-2: #f0f2f6;
+  --panel-3: #e4e7ec;
+  --border: #d0d5dd;
+  --text: #1d2939;
+  --muted: #667085;
+  --accent: #3b6ecc;
+  --accent-soft: rgba(59, 110, 204, 0.12);
+  --success: #16a34a;
+  --success-soft: rgba(22, 163, 74, 0.12);
+  --info: #3b6ecc;
+  --info-soft: rgba(59, 110, 204, 0.12);
+  --warning: #d97706;
+  --warning-soft: rgba(217, 119, 6, 0.12);
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.12);
+  --token: #ea580c;
+  --brand-bg: #1d2939;
+  --brand-fg: #ffffff;
+  --node-fill: #ffffff;
+  --node-stroke: #98a2b3;
+  --transition-fill: #475467;
+  --transition-stroke: #344054;
+  --transition-stroke-enabled: #86efac;
+  --transition-stroke-fired: #bcd4ff;
+  --arc-stroke: #667085;
+  --btn-active-text: #1d2939;
+  --tooltip-bg: #1d2939;
+  --tooltip-fg: #ffffff;
 }
 
 * {
@@ -41,6 +91,7 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  transition: background 0.15s, color 0.15s;
 }
 
 .app {
@@ -70,8 +121,8 @@ body {
   top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%) translateY(-4px);
-  background: var(--panel-3);
-  color: var(--text);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
   padding: 5px 9px;
   border-radius: 5px;
   font-size: 11px;
@@ -107,8 +158,8 @@ body {
 
 .app-tooltip {
   position: fixed;
-  background: var(--panel-3);
-  color: var(--text);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
   padding: 5px 9px;
   border-radius: 5px;
   font-size: 11px;
@@ -156,7 +207,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--accent);
+  color: var(--brand-fg);
   background: var(--brand-bg);
   font-weight: 700;
   font-size: 15px;
@@ -213,6 +264,45 @@ body {
   flex: 0 0 auto;
 }
 
+/* Sélecteur de durée */
+
+.toolbar__select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  flex: 0 0 auto;
+}
+
+.toolbar__select > span {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.toolbar__select select {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  padding: 0 2px;
+}
+
+.toolbar__select select option {
+  background: var(--panel);
+  color: var(--text);
+}
+
 /* ---------------- Buttons ---------------- */
 
 .btn {
@@ -260,13 +350,13 @@ body {
 .btn.is-active {
   background: var(--accent-soft);
   border-color: var(--accent);
-  color: #cddfff;
+  color: var(--btn-active-text);
 }
 
 .btn.is-active.is-danger {
   background: var(--danger-soft);
   border-color: var(--danger);
-  color: #ffc9c9;
+  color: var(--danger);
 }
 
 .btn--success {
@@ -328,7 +418,11 @@ body {
 }
 
 .playground__svg.mode-select {
-  cursor: default;
+  cursor: grab;
+}
+
+.playground__svg.mode-select:active {
+  cursor: grabbing;
 }
 
 .playground__svg.mode-place,
@@ -347,6 +441,7 @@ body {
 
 .playground__bg {
   fill: var(--bg);
+  transition: fill 0.15s;
 }
 
 .playground__zoom {
@@ -367,8 +462,8 @@ body {
 /* ---------------- Places ---------------- */
 
 .place__circle {
-  fill: #1b2029;
-  stroke: #5a6478;
+  fill: var(--node-fill);
+  stroke: var(--node-stroke);
   stroke-width: 2;
   transition: stroke 0.15s, fill 0.15s;
 }
@@ -399,23 +494,31 @@ body {
   font-weight: 700;
 }
 
+/* Jetons animés */
+
+.animated-token {
+  fill: var(--token);
+  opacity: 0.95;
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.55));
+}
+
 /* ---------------- Transitions ---------------- */
 
 .transition__bar {
-  fill: #39414f;
-  stroke: #5a6478;
+  fill: var(--transition-fill);
+  stroke: var(--transition-stroke);
   stroke-width: 2;
   transition: fill 0.15s, stroke 0.15s;
 }
 
 .node--transition.is-enabled .transition__bar {
   fill: var(--success);
-  stroke: #86efac;
+  stroke: var(--transition-stroke-enabled);
 }
 
 .node--transition.is-fired .transition__bar {
   fill: var(--accent);
-  stroke: #bcd4ff;
+  stroke: var(--transition-stroke-fired);
 }
 
 .node--transition.is-source .transition__bar {
@@ -433,13 +536,13 @@ body {
 
 .arc__line {
   fill: none;
-  stroke: #6b7488;
+  stroke: var(--arc-stroke);
   stroke-width: 2;
   pointer-events: none;
 }
 
 .arc__arrow {
-  fill: #6b7488;
+  fill: var(--arc-stroke);
 }
 
 .arc__hit {
@@ -480,7 +583,7 @@ body {
   fill: var(--bg);
   stroke: var(--border);
   stroke-width: 1;
-  transition: stroke 0.15s;
+  transition: stroke 0.15s, fill 0.15s;
 }
 
 .arc__weight:hover .arc__weight-bg {
@@ -572,7 +675,7 @@ body {
 .sidebar-export:hover:not(:disabled) {
   background: var(--accent-soft);
   border-color: var(--accent);
-  color: #cddfff;
+  color: var(--btn-active-text);
 }
 
 .sidebar-export:disabled {
@@ -770,8 +873,6 @@ body {
   white-space: nowrap;
   min-width: 0;
 }
-
-/* Barre de progression d'export */
 
 .statusbar__progress {
   display: flex;

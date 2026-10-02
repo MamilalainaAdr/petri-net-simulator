@@ -18,6 +18,8 @@ import {
   GitBranch,
   ArrowRightLeft,
   ArrowUpDown,
+  Sun,
+  Moon,
 } from 'lucide-react'
 
 const MODES = [
@@ -28,6 +30,8 @@ const MODES = [
   { id: 'token', label: 'Jeton', icon: CircleDot },
   { id: 'delete', label: 'Supprimer', icon: Trash2, danger: true },
 ]
+
+const DURATIONS = [0.5, 1, 1.5, 2, 3, 5, 8]
 
 export default function Toolbar({
   mode,
@@ -49,7 +53,13 @@ export default function Toolbar({
   canRedo,
   onReset,
   onClear,
+  theme,
+  onThemeToggle,
+  animDuration,
+  onAnimDurationChange,
 }) {
+  const ThemeIcon = theme === 'dark' ? Sun : Moon
+
   return (
     <header className="toolbar">
       <div className="toolbar__brand">
@@ -93,6 +103,7 @@ export default function Toolbar({
             aria-label="Orientation gauche à droite"
           >
             <ArrowRightLeft size={14} />
+            <span>LR</span>
           </button>
           <button
             type="button"
@@ -102,6 +113,7 @@ export default function Toolbar({
             aria-label="Orientation haut en bas"
           >
             <ArrowUpDown size={14} />
+            <span>HB</span>
           </button>
         </div>
       </fieldset>
@@ -109,6 +121,21 @@ export default function Toolbar({
       <fieldset className="toolbar__group toolbar__group--actions">
         <legend>Actions</legend>
         <div className="toolbar__group-body">
+          <label className="toolbar__select" data-tooltip="Durée des animations">
+            <span>Durée</span>
+            <select
+              value={animDuration}
+              onChange={(e) => onAnimDurationChange(Number(e.target.value))}
+              aria-label="Durée des animations de jetons"
+            >
+              {DURATIONS.map((d) => (
+                <option key={d} value={d}>
+                  {d}s
+                </option>
+              ))}
+            </select>
+          </label>
+
           {stepMode ? (
             <>
               <button
@@ -208,6 +235,22 @@ export default function Toolbar({
             aria-label="Vider"
           >
             <Eraser size={16} />
+          </button>
+
+          <div className="toolbar__separator" />
+
+          <button
+            type="button"
+            className="btn btn--icon"
+            onClick={onThemeToggle}
+            data-tooltip={
+              theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
+            }
+            aria-label={
+              theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
+            }
+          >
+            <ThemeIcon size={16} />
           </button>
         </div>
       </fieldset>

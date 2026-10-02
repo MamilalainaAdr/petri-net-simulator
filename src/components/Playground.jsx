@@ -1,14 +1,16 @@
 import { useMemo, useRef, useState } from 'react'
-import { ZoomIn, ZoomOut } from 'lucide-react'
+import { ZoomIn, ZoomOut, Maximize } from 'lucide-react'
 import PlaceNode from './PlaceNode'
 import TransitionNode from './TransitionNode'
 import Arc from './Arc'
 import Tooltip from './Tooltip'
+import AnimatedTokens from './AnimatedTokens'
 import { getTransitionAttachment, PLACE_RADIUS } from '../utils/petriNet'
 
 const ZOOM_MIN = 0.4
 const ZOOM_MAX = 2.5
 const ZOOM_STEP = 0.15
+const DRAG_THRESHOLD = 3
 
 export default function Playground({
   places,
@@ -19,6 +21,8 @@ export default function Playground({
   arcSource,
   enabledIds,
   firedId,
+  activeAnimation,
+  onAnimationComplete,
   onCanvasClick,
   onNodeClick,
   onMoveNode,
@@ -31,8 +35,12 @@ export default function Playground({
   const svgRef = useRef(null)
   const dragRef = useRef(null)
   const bendRef = useRef(null)
+  const bgRef = useRef(null)
+
   const [hoverPoint, setHoverPoint] = useState(null)
   const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [panning, setPanning] = useState(false)
 
   const nodeMap = useMemo(() => {
     const map = new Map()
@@ -44,16 +52,60 @@ export default function Playground({
   const pointFromEvent = (e) => {
     const rect = svgRef.current.getBoundingClientRect()
     return {
-      x: (e.clientX - rect.left) / zoom,
-      y: (e.clientY - rect.top) / zoom,
+      x: (e.clientX - rect.left - pan.x) / zoom,
+      y: (e.clientY - rect.top - pan.y) / zoom,
     }
   }
 
-  const handleCanvasPointerDown = (e) => {
+  // ---------------- Fond : clic de création + pan ----------------
+
+  const handleBackgroundPointerDown = (e) => {
     if (e.button !== 0) return
-    const p = pointFromEvent(e)
-    onCanvasClick(p.x, p.y)
+    const startX = e.clientX
+    const startY = e.clientY
+    bgRef.current = {
+      startX,
+      startY,
+      startPanX: pan.x,
+      startPanY: pan.y,
+      moved: false,
+      select: mode === 'select',
+    }
+    if (mode === 'select') setPanning(true)
+    e.currentTarget.setPointerCapture(e.pointerId)
   }
+
+  const handleBackgroundPointerMove = (e) => {
+    const d = bgRef.current
+    if (!d) return
+    const dx = e.clientX - d.startX
+    const dy = e.clientY - d.startY
+    if (!d.moved && Math.hypot(dx, dy) > DRAG_THRESHOLD) d.moved = true
+    if (!d.moved) return
+    if (d.select) {
+      setPan({ x: d.startPanX + dx, y: d.startPanY + dy })
+    }
+  }
+
+  const handleBackgroundPointerUp = (e) => {
+    const d = bgRef.current
+    bgRef.current = null
+    setPanning(false)
+    if (!d) return
+    if (!d.moved) {
+      const rect = svgRef.current.getBoundingClientRect()
+      const x = (e.clientX - rect.left - pan.x) / zoom
+      const y = (e.clientY - rect.top - pan.y) / zoom
+      onCanvasClick(x, y)
+    }
+  }
+
+  const resetView = () => {
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }
+
+  // ---------------- Interactions noeuds ----------------
 
   const handleNodePointerDown = (e, nodeType, nodeId) => {
     e.stopPropagation()
@@ -84,7 +136,7 @@ export default function Playground({
     const d = dragRef.current
     if (!d) return
     const p = pointFromEvent(e)
-    if (!d.moved && Math.hypot(p.x - d.startX, p.y - d.startY) > 3) {
+    if (!d.moved && Math.hypot(p.x - d.startX, p.y - d.startY) > DRAG_THRESHOLD) {
       d.moved = true
       onEditBegin()
     }
@@ -103,6 +155,8 @@ export default function Playground({
       onEditEnd()
     }
   }
+
+  // ---------------- Poignée de poids / courbure ----------------
 
   const handleWeightPointerDown = (e, arcId) => {
     if (e.button !== 0) return
@@ -189,11 +243,15 @@ export default function Playground({
   const canZoomIn = zoom < ZOOM_MAX
   const canZoomOut = zoom > ZOOM_MIN
 
+  const svgCursor =
+    mode === 'select' ? (panning ? 'grabbing' : 'grab') : undefined
+
   return (
     <div className="playground">
       <svg
         ref={svgRef}
         className={`playground__svg mode-${mode}`}
+        style={svgCursor ? { cursor: svgCursor } : undefined}
         onPointerMove={handleSvgPointerMove}
         onPointerLeave={handleSvgPointerLeave}
       >
@@ -212,16 +270,20 @@ export default function Playground({
           </marker>
         </defs>
 
+        {/* Fond : capte le clic de création et le pan. */}
         <rect
           className="playground__bg"
           x="0"
           y="0"
           width="100%"
           height="100%"
-          onPointerDown={handleCanvasPointerDown}
+          onPointerDown={handleBackgroundPointerDown}
+          onPointerMove={handleBackgroundPointerMove}
+          onPointerUp={handleBackgroundPointerUp}
+          onPointerCancel={handleBackgroundPointerUp}
         />
 
-        <g transform={`scale(${zoom})`}>
+        <g transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`}>
           <g className="layer-arcs">
             {arcs.map((arc) => {
               const source = nodeMap.get(arc.from)
@@ -282,6 +344,13 @@ export default function Playground({
               />
             ))}
           </g>
+
+          {activeAnimation && (
+            <AnimatedTokens
+              animation={activeAnimation}
+              onComplete={onAnimationComplete}
+            />
+          )}
         </g>
       </svg>
 
@@ -310,6 +379,16 @@ export default function Playground({
             aria-label="Zoom avant"
           >
             <ZoomIn size={16} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Recentrer la vue" position="top">
+          <button
+            type="button"
+            className="btn btn--icon"
+            onClick={resetView}
+            aria-label="Recentrer la vue"
+          >
+            <Maximize size={16} />
           </button>
         </Tooltip>
       </div>
