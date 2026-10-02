@@ -3,95 +3,72 @@
 Simulateur de réseau de Pétri (RDP) dans le navigateur.
 Construction d'un diagramme dans un playground (places, transitions, arcs
 pondérés, jetons), simulation pas à pas avec animation interpolée du
-déplacement des jetons, documentation via un panneau latéral redimensionnable
-et pliable, thème clair / sombre, et export PDF optimisé.
+déplacement des jetons **le long des arcs (droits ou courbés)**, documentation
+via un panneau latéral redimensionnable et pliable, thème clair / sombre,
+export PDF optimisé, et **landing page d'accueil**.
 
 ## Fonctionnalités
+
+### Landing page
+- Page d'accueil inspirée de Mermaid.js : en-tête avec logo et CTA, section
+  héro avec diagramme animé, section de démonstration avec éditeur de code,
+  grille de fonctionnalités, et section d'appel à l'action finale.
+- Navigation vers le simulateur via React Router (`/` → landing,
+  `/simulator` → application).
 
 ### Édition du graphe
 - Ajout de places et de transitions avec description obligatoire (modale).
 - Création d'arcs orientés entre places et transitions.
-- Poids des arcs configurable (défaut 1) via la zone cliquable au milieu de
-  l'arc.
+- Poids des arcs configurable (défaut 1).
 - Déformation des arcs par glisser-déposer de la poignée centrale.
 - Déplacement des noeuds par glisser-déposer.
 - Suppression de noeuds et d'arcs.
 - Orientation du graphe : LR (gauche à droite) ou HB (haut-bas).
-- Les flèches entrantes arrivent toujours sur la face d'entrée de la
-  transition, les flèches sortantes partent toujours de la face de sortie.
 
 ### Playground
-- **Pan** : en mode Sélectionner, un clic-glisser sur une zone vide du
-  canevas déplace toute la vue du diagramme (curseur main ouverte /
-  main fermée).
-- **Zoom** avant / arrière via deux boutons loupe en bas au centre.
-- **Recentrage** : bouton Maximize pour restaurer zoom et position.
-- **Création** : un clic simple (sans déplacement > 3 px) sur le fond
-  déclenche l'action du mode courant (placer une place, une transition…).
-  Le seuil distingue un clic d'un pan sans ambiguïté.
-- Les noeuds restent prioritaires sur le fond : cliquer sur une place ou
-  une transition n'initie pas de pan.
+- **Pan** : en mode Sélectionner, clic-glisser sur une zone vide pour
+  déplacer la vue.
+- **Zoom** : boutons loupe en bas au centre.
+- **Recentrage** : bouton Maximize.
+- **Création** : un clic simple sur le fond déclenche le mode courant.
+- **Bug corrigé** : le `<rect>` de fond capte toujours le clic de création,
+  même en mode `place` ou `transition`, tout en laissant le pan actif en
+  mode `select`.
 
 ### Marquage initial
-- Le champ de marquage initial de chaque place accepte un entier positif
-  ou la lettre `n` (majuscule ou minuscule) pour représenter un marquage
-  « infini ».
+- Entier positif ou lettre `n` pour un marquage infini.
+- Affichage `n`, `n-1`, `n-2`, … à mesure de la simulation.
 
 ### Simulation et animation
-- Bouton **Play / Pause** : exécution automatique.
-- Bouton **Étape** : mode pas à pas avec Précédent / Suivant / Quitter.
-- Bouton **Reset** : restauration du marquage initial.
-- Bouton **Vider** : remise à zéro complète du canevas.
-- **Durée des animations** : sélecteur à côté du bouton Play (valeurs :
-  0.5 s, 1 s, 1.5 s, 2 s, 3 s (défaut), 5 s, 8 s). La durée est persistée
-  entre les sessions et pilote à la fois l'animation des jetons et
-  l'intervalle entre deux franchissements en mode Play.
-- **Animation interpolée des jetons** : lors du franchissement d'une
-  transition, les jetons sont animés depuis les places d'entrée vers la
-  transition (phase 1), puis de la transition vers les places de sortie
-  (phase 2), avec un easing cubic in-out.
+- **Play / Pause**, **Étape** (avec Précédent / Suivant / Quitter),
+  **Reset**, **Vider**.
+- **Durée des animations** : sélecteur (0,5 s à 8 s, défaut 3 s),
+  persistée dans `localStorage`.
+- **Animation le long des arcs** : les jetons suivent la courbe réelle de
+  chaque arc (droits ou courbés) en utilisant la formule de Bézier
+  quadratique. Deux phases : place d'entrée → transition, puis transition →
+  place de sortie.
 
 ### Thèmes
-- **Mode sombre (défaut)** et **mode clair**.
-- Bouton de bascule (icône Soleil / Lune) dans la barre d'outils.
-- Préférence persistée dans `localStorage`.
-- Toutes les couleurs de l'interface (panneaux, boutons, noeuds, arcs,
-  jetons, tooltips) s'adaptent au thème actif.
+- Mode sombre (défaut) et mode clair.
+- Bascule via l'icône Soleil / Lune dans la barre d'outils.
+- Préférence persistée.
 
 ### Documentation (side panel droit)
 - Nom du projet et description (redimensionnables verticalement).
-- Tableau des places : identifiant, description, marquage initial.
-- Tableau des transitions : identifiant, description, entrées et poids,
-  sorties et poids (générés automatiquement).
-- Largeur ajustable par glisser-déposer de sa bordure gauche.
-- Panneau pliable via un bouton (< / >) : replié, il devient une barre
-  verticale de 44 px.
+- Tableaux des places et des transitions (générés automatiquement).
+- Largeur ajustable, panneau pliable.
 
 ### Historique
-- Boutons Annuler / Refaire dans la barre d'outils.
-- Raccourcis clavier Ctrl+Z et Ctrl+Y (ou Ctrl+Shift+Z).
+- Boutons Annuler / Refaire.
+- Raccourcis Ctrl+Z / Ctrl+Y (ou Ctrl+Shift+Z).
 
 ### Export PDF
-- Bouton Exporter dans le header de la sidebar, visible aussi quand le
-  panneau est replié (icône seule).
-- Actif uniquement lorsque le projet est exécutable (au moins une
-  transition franchissable).
-- Si le marquage initial contient la valeur `n`, l'export est refusé avec
-  une modale d'avertissement.
-- **Contenu** : page 1 = documentation du projet ; pages suivantes = un
-  schéma du diagramme par étape d'exécution.
-- **Format** : A4, paysage si l'affichage est en LR sinon portrait.
-- **Entête / pied** : nom du projet, numérotation `Page X / Y`.
-- **Compression** : JPEG qualité 72 %, résolution 1×, compression zlib
-  agressive, précision des coordonnées limitée. Le poids final est
-  réduit d'un facteur ~8 à 12 par rapport à la version initiale.
-- **Barre de progression** pendant la génération (libellé d'étape +
-  pourcentage).
-
-### Barre d'outils
-- Logo GitBranch + « RDP Simulator » sur fond contrasté.
-- Groupes encadrés : **Objets**, **Affichage** (LR / HB), **Actions**
-  (durée, simulation, historique, reset/vider, thème).
+- Page 1 : documentation du projet.
+- Pages suivantes : schéma par étape d'exécution.
+- Format A4, orientation paysage si LR sinon portrait.
+- Compression JPEG qualité 72 %, zlib agressif, précision limitée.
+- Barre de progression dans la barre de statut.
 
 ## Prérequis
 
@@ -111,8 +88,7 @@ npm install
 npm run dev
 ```
 
-L'application est disponible sur `http://localhost:5173` et s'ouvre
-automatiquement dans le navigateur.
+L'application est disponible sur `http://localhost:5173`.
 
 ## Build de production
 
@@ -126,101 +102,62 @@ npm run build
 npm run preview
 ```
 
-## Guide d'utilisation
-
-### 1. Construire le réseau
-
-| Mode        | Action                                                              |
-| ----------- | ------------------------------------------------------------------- |
-| Sélectionner| Déplacer un noeud, franchir une transition, courber un arc, pan     |
-| Place       | Cliquer sur le canevas pour ajouter une place                       |
-| Transition  | Cliquer sur le canevas pour ajouter une transition                  |
-| Arc         | Cliquer sur une place puis sur une transition (ou l'inverse)        |
-| Jeton       | Cliquer sur une place pour ajouter un jeton                         |
-| Supprimer   | Cliquer sur un noeud ou un arc pour le supprimer                    |
-
-### 2. Naviguer dans le playground
-
-- **Pan** : cliquer-glisser sur une zone vide (mode Sélectionner).
-- **Zoom** : boutons loupe en bas au centre.
-- **Recentrer** : bouton Maximize à côté des boutons de zoom.
-
-### 3. Choisir la durée d'animation
-
-Dans la barre d'outils, groupe Actions, utiliser le sélecteur « Durée »
-à côté du bouton Play. Le choix s'applique immédiatement et est mémorisé.
-
-### 4. Changer de thème
-
-Cliquer sur l'icône Soleil / Lune en bout du groupe Actions.
-
-### 5. Exporter en PDF
-
-Le bouton Exporter est grisé tant qu'aucune transition n'est franchissable.
-Un clic génère un PDF compressé, avec barre de progression dans la barre
-de statut.
-
-### 6. Annuler / Refaire
-
-Ctrl+Z pour annuler, Ctrl+Y (ou Ctrl+Shift+Z) pour refaire.
-
 ## Structure du projet
 
 ```
 petri-net-simulator/
-├── index.html                  Point d'entrée HTML
-├── package.json                Dépendances et scripts npm
-├── vite.config.js              Configuration Vite
-├── README.md                   Ce fichier
+├── index.html
+├── package.json
+├── vite.config.js
+├── README.md
 └── src/
-    ├── main.jsx                Point d'entrée React
-    ├── App.jsx                 État global, historique, orchestration
-    ├── styles.css              Styles globaux + thèmes
+    ├── main.jsx
+    ├── App.jsx
+    ├── styles.css
     ├── hooks/
-    │   └── useLocalStorage.js  Persistance légère
+    │   └── useLocalStorage.js
     ├── utils/
-    │   ├── petriNet.js         Logique métier (franchissement, géométrie)
-    │   ├── exportPdf.js        Génération du PDF (jsPDF + rendu SVG)
-    │   └── pdfOptimizer.js     Compression d'image pour le PDF
+    │   ├── petriNet.js
+    │   ├── exportPdf.js
+    │   └── pdfOptimizer.js
+    ├── pages/
+    │   └── LandingPage.jsx
     └── components/
-        ├── Toolbar.jsx         Barre d'outils (lucide-react)
-        ├── Playground.jsx      Canevas SVG, pan, zoom, interactions
-        ├── PlaceNode.jsx       Rendu d'une place et de ses jetons
-        ├── TransitionNode.jsx  Rendu d'une transition
-        ├── Arc.jsx             Rendu d'un arc orienté (bézier)
-        ├── AnimatedTokens.jsx  Animation interpolée des jetons
-        ├── Sidebar.jsx         Documentation du projet
-        ├── Modal.jsx           Modale générique
-        └── Tooltip.jsx         Tooltip via portail React
+        ├── Toolbar.jsx
+        ├── Playground.jsx
+        ├── PlaceNode.jsx
+        ├── TransitionNode.jsx
+        ├── Arc.jsx
+        ├── AnimatedTokens.jsx
+        ├── Sidebar.jsx
+        ├── Modal.jsx
+        ├── Tooltip.jsx
+        ├── HeroDiagram.jsx
+        └── CodeSnippet.jsx
 ```
 
-## Modèle de données
+## Notes techniques
 
-```js
-project    = { name, description }
-place      = { id, type: 'place',      x, y, label, description, tokens, initialTokens }
-transition = { id, type: 'transition', x, y, label, description }
-arc        = { id, from, to, weight, bend }
-```
+### Animation le long des arcs
+- `buildAnimation` dans `App.jsx` calcule la géométrie complète de chaque
+  arc (`computeArcGeometry`) : points de départ, de contrôle et d'arrivée.
+- `AnimatedTokens.jsx` utilise la formule de Bézier quadratique
+  `B(t) = (1-t)²P₀ + 2(1-t)t·P₁ + t²P₂` pour positionner les jetons
+  exactement sur la courbe, quel que soit le `bend`.
+- Un décalage perpendiculaire évite le chevauchement quand `weight > 1`.
 
-- `place.initialTokens` : entier positif, ou la chaîne `"n"` pour un
-  marquage infini.
-- `place.tokens` : marquage courant (nombre entier ; vaut `INFINITE_TOKENS`
-  lorsque le marquage initial est `"n"`).
-- `arc.weight` : poids (entier >= 1), défaut 1.
-- `arc.bend` : décalage perpendiculaire signé du milieu de l'arc, défaut 0.
-
-## Limites connues
-
-- Une place ne peut pas contenir de capacité maximale.
-- Pas d'export / import de fichier source (uniquement l'export PDF).
-- L'historique ne contient pas plus de 50 actions.
-- L'export PDF est refusé lorsque le marquage initial contient `n`.
+### Landing page
+- Rendu via `react-router-dom` : `/` pour la landing, `/simulator` pour
+  l'application.
+- `HeroDiagram` : SVG animé en CSS/JS léger, sans dépendance.
+- `CodeSnippet` : coloration syntaxique basique par expressions régulières.
+- Thème appliqué via `data-theme` sur `<html>`, partagé avec le simulateur.
 
 ## Stack technique
 
 - React 18
 - Vite 5
-- lucide-react pour l'iconographie
-- jsPDF pour la génération du PDF
-- SVG natif pour le rendu du graphe
+- React Router 6
+- lucide-react
+- jsPDF
+- SVG natif
