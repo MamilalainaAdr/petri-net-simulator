@@ -1,4 +1,6 @@
 # RDP Simulator
+## **[Preview on Vercel](https://rdp-simulator.vercel.app/)**
+
 
 Simulateur de réseau de Pétri (RDP) dans le navigateur. Landing page d'accueil,
 éditeur visuel, simulation pas à pas animée, documentation intégrée et export
