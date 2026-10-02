@@ -133,7 +133,7 @@ sombre.
 ## Installation
 
 ```bash
-git clone <url-du-repo>
+git clone https://github.com/MamilalainaAdr/petri-net-simulator.git
 cd petri-net-simulator
 npm install
 ```
@@ -152,8 +152,6 @@ L'application démarre sur `http://localhost:5173` et s'ouvre automatiquement.
 
 - `/` : landing page.
 - `/simulator` : simulateur vide.
-- `/simulator?demo=hero` : exemple simple pré-chargé.
-- `/simulator?demo=vending` : distributeur automatique pré-chargé.
 
 ### Build de production
 
