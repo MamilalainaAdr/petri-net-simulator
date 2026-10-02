@@ -147,12 +147,28 @@ function Simulator({ theme, onThemeToggle }) {
   const [activeAnimation, setActiveAnimation] = useState(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
 
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  // Sidebar : ouvert par défaut en desktop, fermé sur mobile.
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return window.matchMedia('(min-width: 768px)').matches
+  })
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT)
 
   const [animDuration, setAnimDuration] = useLocalStorage('rdp-anim-duration', 3)
 
   const { places, transitions, arcs, orientation, project } = doc
+
+  // Ferme / ouvre la sidebar quand on franchit le breakpoint mobile.
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    const onChange = (e) => {
+      // À l'entrée en mobile, on referme pour laisser le playground visible.
+      // Au retour en desktop, on rouvre.
+      setSidebarOpen(!e.matches)
+    }
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
 
   // --------- Chargement du projet de démonstration ---------
   useEffect(() => {
@@ -188,8 +204,6 @@ function Simulator({ theme, onThemeToggle }) {
     () => new Set(enabledTransitions.map((t) => t.id)),
     [enabledTransitions]
   )
-
-  // --------- Historique ---------
 
   const resetSim = useCallback(() => {
     setSim({

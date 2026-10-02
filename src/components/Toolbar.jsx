@@ -128,6 +128,32 @@ export default function Toolbar({
             <ArrowUpDown size={14} />
             <span>HB</span>
           </button>
+
+          <div className="toolbar__separator" />
+
+          <button
+            type="button"
+            className="btn btn--icon"
+            onClick={onThemeToggle}
+            data-tooltip={
+              theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
+            }
+            aria-label={
+              theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
+            }
+          >
+            <ThemeIcon size={16} />
+          </button>
+
+          <button
+            type="button"
+            className="btn btn--icon btn--help"
+            onClick={onShowGuide}
+            data-tooltip="Afficher le guide pas à pas"
+            aria-label="Afficher le guide pas à pas"
+          >
+            <HelpCircle size={16} />
+          </button>
         </div>
       </fieldset>
 
@@ -251,32 +277,6 @@ export default function Toolbar({
             aria-label="Vider"
           >
             <Eraser size={16} />
-          </button>
-
-          <div className="toolbar__separator" />
-
-          <button
-            type="button"
-            className="btn btn--icon"
-            onClick={onThemeToggle}
-            data-tooltip={
-              theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
-            }
-            aria-label={
-              theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'
-            }
-          >
-            <ThemeIcon size={16} />
-          </button>
-
-          <button
-            type="button"
-            className="btn btn--icon btn--help"
-            onClick={onShowGuide}
-            data-tooltip="Afficher le guide pas à pas"
-            aria-label="Afficher le guide pas à pas"
-          >
-            <HelpCircle size={16} />
           </button>
         </div>
       </fieldset>

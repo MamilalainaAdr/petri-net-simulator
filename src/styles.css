@@ -1,17 +1,9 @@
 /* ==================================================================
    1. PALETTE & THÈMES
-   Rôles attribués à chaque couleur :
-     - Violet #8254ee  → identité (marque, CTA primaire, focus)
-     - Or     #e7c965  → simulation (jetons fixes, actifs, play, aide)
-     - Sauge  #c1cfc1  → succès, hover, transitions franchissables,
-                         jetons en transit
-     - Mauve  #82717b  → structure (contours, arcs, bordures)
-     - Gris chaud + noir → fonds
    ================================================================== */
 
 :root,
 [data-theme='dark'] {
-  /* Base sombre */
   --bg: #090909;
   --bg-elevated: #121012;
   --panel: rgba(24, 20, 24, 0.72);
@@ -21,29 +13,21 @@
   --border: rgba(193, 207, 193, 0.14);
   --border-strong: rgba(193, 207, 193, 0.24);
 
-  /* Texte */
   --text: #f1ede8;
   --muted: #9c908a;
   --text-soft: #c1cfc1;
 
-  /* Identité (violet, usage restreint) */
   --accent: #8254ee;
   --accent-soft: rgba(130, 84, 238, 0.16);
   --accent-strong: #9d78f5;
 
-  /* Simulation (or) */
   --gold: #e7c965;
   --gold-soft: rgba(231, 201, 101, 0.16);
-
-  /* Succès & hover (sauge) */
   --sage: #c1cfc1;
   --sage-soft: rgba(193, 207, 193, 0.14);
-
-  /* Structure (mauve) */
   --mauve: #82717b;
   --mauve-soft: rgba(130, 113, 123, 0.22);
 
-  /* Sémantiques */
   --success: #7dc99a;
   --success-soft: rgba(125, 201, 154, 0.16);
   --info: #e7c965;
@@ -53,7 +37,6 @@
   --danger: #e06c75;
   --danger-soft: rgba(224, 108, 117, 0.16);
 
-  /* Graphe */
   --token: #e7c965;
   --token-transit: #c1cfc1;
   --token-transit-glow: rgba(193, 207, 193, 0.65);
@@ -67,27 +50,22 @@
   --arc-stroke: #82717b;
   --btn-active-text: #f1ede8;
 
-  /* Marque */
   --brand-bg: #8254ee;
   --brand-fg: #ffffff;
 
-  /* Verre */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-bg-strong: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(193, 207, 193, 0.18);
   --glass-blur: blur(18px) saturate(140%);
   --glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
 
-  /* Tooltips */
   --tooltip-bg: rgba(24, 20, 24, 0.92);
   --tooltip-fg: #f1ede8;
 
-  /* Grille */
   --dot-color: rgba(193, 207, 193, 0.14);
   --dot-size: 30px;
   --spotlight-scrim: rgba(0, 0, 0, 0.7);
 
-  /* Sections landing */
   --hero-bg: radial-gradient(circle at 15% 20%, rgba(130, 84, 238, 0.2), transparent 45%),
              radial-gradient(circle at 85% 80%, rgba(231, 201, 101, 0.16), transparent 50%),
              linear-gradient(160deg, #090909 0%, #121012 55%, #0f0b12 100%);
@@ -120,10 +98,8 @@
 
   --gold: #b8942f;
   --gold-soft: rgba(184, 148, 47, 0.18);
-
   --sage: #7a8a7a;
   --sage-soft: rgba(122, 138, 122, 0.18);
-
   --mauve: #82717b;
   --mauve-soft: rgba(130, 113, 123, 0.16);
 
@@ -181,8 +157,8 @@
 html, body, #root { height: 100%; margin: 0; }
 
 body {
-  min-width: 1080px;
-  min-height: 600px;
+  min-width: 320px;
+  min-height: 100vh;
   overflow: auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
@@ -208,8 +184,9 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  min-height: 600px;
+  height: 100dvh;
   overflow: hidden;
+  position: relative;
 }
 
 .app__body {
@@ -217,9 +194,9 @@ body {
   display: flex;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
-/* Tooltips */
 [data-tooltip] { position: relative; }
 
 [data-tooltip]::after {
@@ -963,6 +940,7 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 50;
+  padding: 16px;
 }
 
 .modal {
@@ -972,7 +950,7 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: 16px;
   width: 380px;
-  max-width: calc(100% - 32px);
+  max-width: 100%;
   box-shadow: var(--glass-shadow);
   display: flex;
   flex-direction: column;
@@ -1376,9 +1354,6 @@ body {
   max-width: 540px;
 }
 
-/* ================================================================
-   Carte du mini diagramme [1] : hover calqué sur le bloc de code [2]
-   ================================================================ */
 .landing__hero-visual {
   display: flex;
   align-items: center;
@@ -1573,10 +1548,10 @@ body {
   font-size: 14px;
   line-height: 1.75;
   color: #e8e2f3;
-  overflow: visible;
+  overflow-x: auto;
 }
 
-.code-snippet--fixed { max-height: none; overflow: visible; }
+.code-snippet--fixed { max-height: none; }
 
 .landing__section--features { background: var(--features-bg); }
 
@@ -1909,9 +1884,53 @@ body {
    7. RESPONSIVE
    ================================================================== */
 
+/* ---------- Tablette large : ≤ 1200px ---------- */
+@media (max-width: 1200px) {
+  .landing__hero-text h1 { font-size: 40px; }
+  .landing__section { padding: 80px 24px; }
+  .landing__nav { padding: 12px 20px; }
+}
+
+/* ---------- Tablette : ≤ 1023px ---------- */
+@media (max-width: 1023px) {
+  .toolbar {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    row-gap: 6px;
+  }
+
+  .toolbar__group--display {
+    order: 3;
+    margin: 0;
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .toolbar__group--display .toolbar__group-body {
+    justify-content: center;
+  }
+
+  .toolbar__group--actions { order: 2; margin-left: auto; }
+
+  .landing__nav { padding: 10px 20px; }
+  .landing__section { padding: 60px 24px; }
+
+  .landing__hero-text h1 { font-size: 34px; }
+  .landing__section-header h2,
+  .landing__cta-block h2 { font-size: 26px; }
+
+  .landing__features-grid { grid-template-columns: repeat(2, 1fr); }
+  .landing__structure { gap: 32px; }
+}
+
+/* ---------- Passage en 1 colonne : ≤ 960px ---------- */
 @media (max-width: 960px) {
+  /* [1] Hero et [2] Structure passent en 1 colonne.
+     Ordre conservé : texte/boutons d'abord, puis visuel/code. */
   .landing__hero,
-  .landing__structure { grid-template-columns: 1fr; }
+  .landing__structure {
+    grid-template-columns: 1fr;
+  }
 
   .landing__hero-text h1 { font-size: 34px; }
   .landing__section-header h2,
@@ -1928,6 +1947,351 @@ body {
   .landing__actions-group { justify-content: center; }
 }
 
-@media (max-width: 640px) {
-  .landing__features-grid { grid-template-columns: 1fr; }
+/* ---------- Mobile : ≤ 767px ---------- */
+@media (max-width: 767px) {
+  body { min-width: 320px; }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    flex-wrap: wrap;
+    padding: 6px 8px;
+    row-gap: 6px;
+    column-gap: 6px;
+    min-height: 0;
+  }
+
+  .toolbar__brand {
+    font-size: 13px;
+    padding: 5px 10px;
+    height: 30px;
+    gap: 6px;
+    border-radius: 8px;
+  }
+
+  .toolbar__brand svg { width: 16px; height: 16px; }
+
+  .toolbar__group {
+    padding: 2px 6px 5px;
+    border-radius: 10px;
+  }
+
+  .toolbar__group legend {
+    font-size: 9px;
+    padding: 0 4px;
+    margin-left: 2px;
+    letter-spacing: 0.06em;
+  }
+
+  .toolbar__group-body { gap: 3px; }
+
+  .toolbar__group:not(.toolbar__group--display):not(.toolbar__group--actions) {
+    order: 2;
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .toolbar__group:not(.toolbar__group--display):not(.toolbar__group--actions)
+    .toolbar__group-body {
+    justify-content: center;
+  }
+
+  .toolbar__group--display {
+    order: 3;
+    flex: 1 1 auto;
+    margin: 0;
+  }
+
+  .toolbar__group--actions {
+    order: 4;
+    flex: 1 1 100%;
+  }
+
+  .toolbar__group--actions .toolbar__group-body {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn { font-size: 12px; padding: 5px 8px; }
+  .btn--icon { width: 30px; height: 30px; }
+  .btn--label { padding: 5px 10px; min-width: 56px; height: 30px; font-size: 11px; }
+
+  .toolbar__select {
+    height: 30px;
+    padding: 0 8px;
+    gap: 4px;
+  }
+  .toolbar__select > span { font-size: 9px; }
+  .toolbar__select select { font-size: 11px; }
+
+  /* ---------- Playground ---------- */
+  .playground__zoom {
+    bottom: 10px;
+    padding: 3px;
+    border-radius: 10px;
+  }
+
+  .playground__zoom .btn--icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* ---------- Sidebar : overlay plein écran ---------- */
+  .sidebar-shell {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 90% !important;
+    max-width: 400px;
+    z-index: 30;
+    box-shadow: -16px 0 40px rgba(0, 0, 0, 0.55);
+  }
+
+  .sidebar-shell.is-collapsed {
+    width: 40px !important;
+    box-shadow: none;
+  }
+
+  /* ---------- Statusbar ---------- */
+  .statusbar {
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 12px;
+    font-size: 11px;
+    text-align: center;
+    align-items: stretch;
+  }
+
+  .statusbar__hint,
+  .statusbar__message {
+    text-align: center;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.35;
+  }
+
+  .statusbar__progress {
+    flex: 0 1 auto;
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+  }
+
+  .statusbar__progress-label {
+    max-width: 120px;
+    font-size: 11px;
+  }
+
+  /* ---------- Landing nav ---------- */
+  .landing__nav {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .landing__brand {
+    font-size: 14px;
+    padding: 4px 6px;
+    gap: 6px;
+  }
+
+  .landing__brand svg { width: 18px; height: 18px; }
+
+  .landing__nav-links { display: none; }
+
+  .landing__nav-cta {
+    padding: 6px 10px;
+    font-size: 11.5px;
+    margin-left: auto;
+  }
+
+  .landing__nav-theme {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+
+  /* ---------- Landing sections ---------- */
+  .landing__section {
+    min-height: auto;
+    padding: 56px 16px;
+  }
+
+  .landing__section--hero { padding-top: 72px; padding-bottom: 56px; }
+
+  .landing__section-header { margin-bottom: 24px; }
+
+  .landing__section-header h2,
+  .landing__cta-block h2 {
+    font-size: 22px;
+    line-height: 1.25;
+  }
+
+  .landing__section-header p,
+  .landing__cta-block p { font-size: 14px; }
+
+  .landing__hero {
+    gap: 24px;
+  }
+
+  /* Ordre préservé : texte/boutons d'abord, visuel ensuite. */
+
+  .landing__hero-text h1 {
+    font-size: 26px;
+    line-height: 1.2;
+    margin: 10px 0 14px;
+  }
+
+  .landing__hero-text p {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .landing__hero-visual {
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .landing__hero-visual:hover,
+  .landing__code-window:hover {
+    transform: translateY(-3px);
+  }
+
+  .landing__code-window { border-radius: 14px; }
+
+  .landing__code-bar { padding: 10px 12px; }
+  .landing__code-title { font-size: 11px; }
+
+  .code-snippet {
+    font-size: 11.5px;
+    line-height: 1.6;
+    padding: 16px 14px;
+  }
+
+  .landing__structure { gap: 24px; }
+  .landing__structure-text h2 { font-size: 22px; }
+  .landing__structure-text p { font-size: 14px; }
+  .landing__list { font-size: 13.5px; line-height: 1.8; }
+
+  .landing__features-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .landing__feature { padding: 18px 16px; }
+  .landing__feature h3 { font-size: 14.5px; }
+  .landing__feature p { font-size: 12.5px; }
+
+  .landing__cta-block {
+    padding: 28px 18px;
+    border-radius: 18px;
+  }
+
+  .landing__actions--split {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .landing__actions,
+  .landing__actions-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .landing__cta {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 18px;
+    font-size: 13.5px;
+  }
+
+  .landing__footer {
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 11px;
+  }
+
+  /* ---------- Onboarding ---------- */
+  .onboarding__card {
+    width: calc(100vw - 24px);
+    max-width: 480px;
+    padding: 16px 16px 14px;
+    border-radius: 14px;
+  }
+
+  .onboarding__header { flex-wrap: wrap; gap: 6px; }
+  .onboarding__title { font-size: 14px; }
+  .onboarding__text { font-size: 12.5px; }
+
+  /* ---------- Guide modal ---------- */
+  .guide-modal {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .guide-modal__panel {
+    max-height: calc(100vh - 24px);
+    border-radius: 14px;
+  }
+
+  .guide-modal__header { padding: 14px 16px; }
+  .guide-modal__header h2 { font-size: 15px; }
+
+  .guide-modal__body { padding: 16px; gap: 20px; }
+
+  .guide-modal__grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .guide-modal__item {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .guide-modal__item-icon { width: 32px; height: 32px; }
+  .guide-modal__item-body h4 { font-size: 12.5px; }
+  .guide-modal__item-body p { font-size: 11.5px; }
+
+  /* ---------- Modale générique ---------- */
+  .modal { width: 100%; }
+  .modal__body { padding: 14px; }
+}
+
+/* ---------- Très petit mobile : ≤ 400px ---------- */
+@media (max-width: 400px) {
+  .toolbar__group-body { gap: 2px; }
+  .btn--icon { width: 28px; height: 28px; }
+  .btn--label { min-width: 48px; padding: 4px 8px; font-size: 10.5px; }
+
+  .landing__brand span { display: none; }
+  .landing__brand { padding: 6px; }
+
+  .landing__hero-text h1 { font-size: 22px; }
+  .landing__section-header h2,
+  .landing__cta-block h2 { font-size: 19px; }
+
+  .landing__hero-visual { padding: 10px; }
+  .hero-mini { max-width: 260px; }
+
+  .code-snippet {
+    font-size: 10.5px;
+    padding: 14px 12px;
+  }
+}
+
+/* ---------- Orientation paysage sur petits écrans ---------- */
+@media (max-height: 500px) and (orientation: landscape) {
+  .landing__section {
+    min-height: auto;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  .onboarding__card {
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+  }
 }
