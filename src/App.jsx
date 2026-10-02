@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import {
+  Routes,
+  Route,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
 import { ChevronLeft, ChevronRight, FileDown } from 'lucide-react'
 import Toolbar from './components/Toolbar'
 import Playground from './components/Playground'
@@ -7,7 +12,8 @@ import Sidebar from './components/Sidebar'
 import Modal from './components/Modal'
 import Tooltip from './components/Tooltip'
 import LandingPage from './pages/LandingPage'
-import { DEMO_PROJECT } from './data/demoProject'
+import OnboardingTour from './components/OnboardingTour'
+import { DEMO_PROJECTS } from './data/demoProject'
 import {
   createId,
   fireTransition,
@@ -108,9 +114,10 @@ function MessageDialog({ title, message, onClose }) {
   )
 }
 
-// --- App ---
+// --- Simulator (route /simulator) ---
 
-export default function App() {
+function Simulator() {
+  const location = useLocation()
   const navigate = useNavigate()
   const [state, setState] = useState({
     doc: INITIAL_DOC,
@@ -138,6 +145,7 @@ export default function App() {
   const [exporting, setExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(null)
   const [activeAnimation, setActiveAnimation] = useState(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_DEFAULT)
@@ -152,19 +160,33 @@ export default function App() {
   }, [theme])
 
   // --------- Chargement du projet de démonstration ---------
+  // Dépend de location.search pour se déclencher à chaque navigation.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('demo') === '1') {
-      // Copie profonde pour ne pas muter la constante
-      const demoDoc = JSON.parse(JSON.stringify(DEMO_PROJECT))
-      docRef.current = demoDoc
-      setState({ doc: demoDoc, past: [], future: [] })
-      setMessage('Projet de démonstration chargé')
-      // Nettoie l'URL
-      window.history.replaceState({}, '', '/simulator')
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    const params = new URLSearchParams(location.search)
+    const demoKey = params.get('demo')
+    if (!demoKey) return
+
+    const project = DEMO_PROJECTS[demoKey]
+    if (!project) return
+
+    // Copie profonde pour ne pas muter la constante
+    const demoDoc = JSON.parse(JSON.stringify(project))
+    docRef.current = demoDoc
+    setState({ doc: demoDoc, past: [], future: [] })
+    setSim({
+      running: false,
+      stepMode: false,
+      states: [],
+      index: 0,
+      lastFired: null,
+    })
+    setActiveAnimation(null)
+    setMessage(`Projet de démonstration « ${demoDoc.project.name} » chargé`)
+    setShowOnboarding(true)
+
+    // Nettoie l'URL pour éviter un rechargement en boucle
+    navigate('/simulator', { replace: true })
+  }, [location.search, navigate])
 
   const enabledTransitions = useMemo(
     () => getEnabledTransitions(transitions, arcs, places),
@@ -835,195 +857,195 @@ export default function App() {
   const progressValue = exportProgress?.value ?? 0
 
   return (
+    <div className="app">
+      <Toolbar
+        mode={mode}
+        onModeChange={handleModeChange}
+        orientation={orientation}
+        onOrientationChange={handleOrientationChange}
+        isPlaying={sim.running}
+        onPlayPause={handlePlayPause}
+        stepMode={sim.stepMode}
+        onStepEnter={handleStepEnter}
+        onStepPrev={handleStepPrev}
+        onStepNext={handleStepNext}
+        onStepExit={handleStepExit}
+        canStep={enabledTransitions.length > 0}
+        canStepPrev={sim.index > 0}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onReset={handleReset}
+        onClear={handleClear}
+        theme={theme}
+        onThemeToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        animDuration={animDuration}
+        onAnimDurationChange={setAnimDuration}
+      />
+
+      <div className="app__body">
+        <Playground
+          places={places}
+          transitions={transitions}
+          arcs={arcs}
+          orientation={orientation}
+          mode={mode}
+          arcSource={arcSource}
+          enabledIds={enabledIds}
+          firedId={sim.lastFired?.id ?? null}
+          activeAnimation={activeAnimation}
+          onAnimationComplete={handleAnimationComplete}
+          onCanvasClick={handleCanvasClick}
+          onNodeClick={handleNodeClick}
+          onMoveNode={handleMoveNode}
+          onDeleteArc={handleDeleteArc}
+          onEditArcWeight={handleEditArcWeight}
+          onBendChange={handleBendChange}
+          onEditBegin={beginEdit}
+          onEditEnd={endEdit}
+        />
+
+        <div
+          className={`sidebar-shell ${sidebarOpen ? 'is-open' : 'is-collapsed'}`}
+          style={{ width: sidebarOpen ? sidebarWidth : SIDEBAR_COLLAPSED }}
+        >
+          <div className="sidebar-shell__header">
+            <Tooltip
+              content={
+                sidebarOpen ? 'Masquer le panneau' : 'Afficher le panneau'
+              }
+              position="left"
+            >
+              <button
+                type="button"
+                className="sidebar-toggle"
+                onClick={() => setSidebarOpen((v) => !v)}
+                aria-label={
+                  sidebarOpen ? 'Masquer le panneau' : 'Afficher le panneau'
+                }
+              >
+                {sidebarOpen ? (
+                  <ChevronRight size={16} />
+                ) : (
+                  <ChevronLeft size={16} />
+                )}
+              </button>
+            </Tooltip>
+
+            <Tooltip content="Exporter le projet" position="left">
+              <button
+                type="button"
+                className="sidebar-export"
+                onClick={handleExport}
+                disabled={!canExport || exporting}
+                aria-label="Exporter le projet"
+              >
+                <FileDown size={16} />
+                {sidebarOpen && <span>Exporter</span>}
+              </button>
+            </Tooltip>
+          </div>
+
+          {sidebarOpen && (
+            <div className="sidebar-shell__body">
+              <div
+                className="sidebar-shell__resizer"
+                onPointerDown={handleSidebarResizer}
+                role="separator"
+                aria-orientation="vertical"
+              />
+              <Sidebar
+                project={project}
+                places={places}
+                transitions={transitions}
+                arcs={arcs}
+                onProjectChange={handleProjectChange}
+                onPlaceChange={handlePlaceChange}
+                onTransitionChange={handleTransitionChange}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <footer className="statusbar">
+        <span className="statusbar__hint">{HINTS[mode]}</span>
+        {exportProgress ? (
+          <div className="statusbar__progress" aria-live="polite">
+            <span className="statusbar__progress-label">
+              {exportProgress.label}
+            </span>
+            <div
+              className="statusbar__progress-bar"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow={Math.round(progressValue)}
+            >
+              <div
+                className="statusbar__progress-fill"
+                style={{ width: `${progressValue}%` }}
+              />
+            </div>
+            <span className="statusbar__progress-value">
+              {Math.round(progressValue)}%
+            </span>
+          </div>
+        ) : (
+          <span className="statusbar__message">
+            {message || defaultMessage}
+          </span>
+        )}
+      </footer>
+
+      {modal?.type === 'newPlace' && (
+        <DescriptionDialog
+          title="Nouvelle place"
+          onClose={() => setModal(null)}
+          onConfirm={confirmNewPlace}
+        />
+      )}
+      {modal?.type === 'newTransition' && (
+        <DescriptionDialog
+          title="Nouvelle transition"
+          onClose={() => setModal(null)}
+          onConfirm={confirmNewTransition}
+        />
+      )}
+      {modal?.type === 'editWeight' && (
+        <WeightDialog
+          initial={modal.data.initial}
+          onClose={() => setModal(null)}
+          onConfirm={confirmWeight}
+        />
+      )}
+      {modal?.type === 'exportError' && (
+        <MessageDialog
+          title={modal.data.title}
+          message={modal.data.message}
+          onClose={() => setModal(null)}
+        />
+      )}
+
+      {showOnboarding && (
+        <OnboardingTour onClose={() => setShowOnboarding(false)} />
+      )}
+    </div>
+  )
+}
+
+// --- App (routes) ---
+
+export default function App() {
+  const navigate = useNavigate()
+  return (
     <Routes>
       <Route
         path="/"
         element={<LandingPage onStart={() => navigate('/simulator')} />}
       />
-      <Route
-        path="/simulator"
-        element={
-          <div className="app">
-            <Toolbar
-              mode={mode}
-              onModeChange={handleModeChange}
-              orientation={orientation}
-              onOrientationChange={handleOrientationChange}
-              isPlaying={sim.running}
-              onPlayPause={handlePlayPause}
-              stepMode={sim.stepMode}
-              onStepEnter={handleStepEnter}
-              onStepPrev={handleStepPrev}
-              onStepNext={handleStepNext}
-              onStepExit={handleStepExit}
-              canStep={enabledTransitions.length > 0}
-              canStepPrev={sim.index > 0}
-              onUndo={undo}
-              onRedo={redo}
-              canUndo={canUndo}
-              canRedo={canRedo}
-              onReset={handleReset}
-              onClear={handleClear}
-              theme={theme}
-              onThemeToggle={() =>
-                setTheme(theme === 'dark' ? 'light' : 'dark')
-              }
-              animDuration={animDuration}
-              onAnimDurationChange={setAnimDuration}
-            />
-
-            <div className="app__body">
-              <Playground
-                places={places}
-                transitions={transitions}
-                arcs={arcs}
-                orientation={orientation}
-                mode={mode}
-                arcSource={arcSource}
-                enabledIds={enabledIds}
-                firedId={sim.lastFired?.id ?? null}
-                activeAnimation={activeAnimation}
-                onAnimationComplete={handleAnimationComplete}
-                onCanvasClick={handleCanvasClick}
-                onNodeClick={handleNodeClick}
-                onMoveNode={handleMoveNode}
-                onDeleteArc={handleDeleteArc}
-                onEditArcWeight={handleEditArcWeight}
-                onBendChange={handleBendChange}
-                onEditBegin={beginEdit}
-                onEditEnd={endEdit}
-              />
-
-              <div
-                className={`sidebar-shell ${
-                  sidebarOpen ? 'is-open' : 'is-collapsed'
-                }`}
-                style={{ width: sidebarOpen ? sidebarWidth : SIDEBAR_COLLAPSED }}
-              >
-                <div className="sidebar-shell__header">
-                  <Tooltip
-                    content={
-                      sidebarOpen
-                        ? 'Masquer le panneau'
-                        : 'Afficher le panneau'
-                    }
-                    position="left"
-                  >
-                    <button
-                      type="button"
-                      className="sidebar-toggle"
-                      onClick={() => setSidebarOpen((v) => !v)}
-                      aria-label={
-                        sidebarOpen
-                          ? 'Masquer le panneau'
-                          : 'Afficher le panneau'
-                      }
-                    >
-                      {sidebarOpen ? (
-                        <ChevronRight size={16} />
-                      ) : (
-                        <ChevronLeft size={16} />
-                      )}
-                    </button>
-                  </Tooltip>
-
-                  <Tooltip content="Exporter le projet" position="left">
-                    <button
-                      type="button"
-                      className="sidebar-export"
-                      onClick={handleExport}
-                      disabled={!canExport || exporting}
-                      aria-label="Exporter le projet"
-                    >
-                      <FileDown size={16} />
-                      {sidebarOpen && <span>Exporter</span>}
-                    </button>
-                  </Tooltip>
-                </div>
-
-                {sidebarOpen && (
-                  <div className="sidebar-shell__body">
-                    <div
-                      className="sidebar-shell__resizer"
-                      onPointerDown={handleSidebarResizer}
-                      role="separator"
-                      aria-orientation="vertical"
-                    />
-                    <Sidebar
-                      project={project}
-                      places={places}
-                      transitions={transitions}
-                      arcs={arcs}
-                      onProjectChange={handleProjectChange}
-                      onPlaceChange={handlePlaceChange}
-                      onTransitionChange={handleTransitionChange}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <footer className="statusbar">
-              <span className="statusbar__hint">{HINTS[mode]}</span>
-              {exportProgress ? (
-                <div className="statusbar__progress" aria-live="polite">
-                  <span className="statusbar__progress-label">
-                    {exportProgress.label}
-                  </span>
-                  <div
-                    className="statusbar__progress-bar"
-                    role="progressbar"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                    aria-valuenow={Math.round(progressValue)}
-                  >
-                    <div
-                      className="statusbar__progress-fill"
-                      style={{ width: `${progressValue}%` }}
-                    />
-                  </div>
-                  <span className="statusbar__progress-value">
-                    {Math.round(progressValue)}%
-                  </span>
-                </div>
-              ) : (
-                <span className="statusbar__message">
-                  {message || defaultMessage}
-                </span>
-              )}
-            </footer>
-
-            {modal?.type === 'newPlace' && (
-              <DescriptionDialog
-                title="Nouvelle place"
-                onClose={() => setModal(null)}
-                onConfirm={confirmNewPlace}
-              />
-            )}
-            {modal?.type === 'newTransition' && (
-              <DescriptionDialog
-                title="Nouvelle transition"
-                onClose={() => setModal(null)}
-                onConfirm={confirmNewTransition}
-              />
-            )}
-            {modal?.type === 'editWeight' && (
-              <WeightDialog
-                initial={modal.data.initial}
-                onClose={() => setModal(null)}
-                onConfirm={confirmWeight}
-              />
-            )}
-            {modal?.type === 'exportError' && (
-              <MessageDialog
-                title={modal.data.title}
-                message={modal.data.message}
-                onClose={() => setModal(null)}
-              />
-            )}
-          </div>
-        }
-      />
+      <Route path="/simulator" element={<Simulator />} />
     </Routes>
   )
 }

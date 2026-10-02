@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Play,
@@ -6,15 +7,16 @@ import {
   Zap,
   Eye,
   Code,
+  BookOpen,
   Sun,
   Moon,
 } from 'lucide-react'
-import VendingDiagram from '../components/VendingDiagram'
-import InfoBox from '../components/InfoBox'
+import HeroMiniDiagram from '../components/HeroMiniDiagram'
+import GuideModal from '../components/GuideModal'
 
 const APP_VERSION = '1.0'
 
-const DEMO_CODE = `// Distributeur automatique de boisson
+const DEMO_CODE = `// Distributeur automatique — modèle RDP
 const net = {
   places: [
     { id: 'P1', tokens: 1,  description: 'Distributeur_Disponible' },
@@ -77,124 +79,88 @@ const FEATURES = [
   },
 ]
 
-const INFO_BOXES = [
-  {
-    group: 'Modes',
-    title: 'Sélectionner',
-    text: "Déplacer un noeud, franchir une transition, courber un arc ou déplacer la vue (pan) en cliquant-glissant sur le fond.",
-  },
-  {
-    group: 'Modes',
-    title: 'Place',
-    text: 'Cliquer sur le canevas pour ajouter une place. Une description est demandée.',
-  },
-  {
-    group: 'Modes',
-    title: 'Transition',
-    text: 'Cliquer sur le canevas pour ajouter une transition. Une description est demandée.',
-  },
-  {
-    group: 'Modes',
-    title: 'Arc',
-    text: "Cliquer sur une place puis sur une transition (ou l'inverse) pour créer un arc orienté.",
-  },
-  {
-    group: 'Modes',
-    title: 'Jeton',
-    text: 'Cliquer sur une place pour y ajouter un jeton.',
-  },
-  {
-    group: 'Modes',
-    title: 'Supprimer',
-    text: 'Cliquer sur un noeud ou un arc pour le supprimer.',
-  },
-  {
-    group: 'Simulation',
-    title: 'Play / Pause',
-    text: 'Lance la simulation automatique : chaque transition franchissable est déclenchée à tour de rôle.',
-  },
-  {
-    group: 'Simulation',
-    title: 'Étape',
-    text: 'Active le mode pas à pas avec Précédent, Suivant et Quitter pour revenir sur chaque franchissement.',
-  },
-  {
-    group: 'Simulation',
-    title: 'Reset',
-    text: 'Restaure le marquage initial de chaque place, tel que défini dans le panneau latéral.',
-  },
-  {
-    group: 'Simulation',
-    title: 'Durée',
-    text: "Choisit la durée des animations et l'intervalle entre deux franchissements (0,5 s à 8 s).",
-  },
-  {
-    group: 'Édition',
-    title: 'Annuler / Refaire',
-    text: 'Historique des 50 dernières actions. Raccourcis Ctrl+Z et Ctrl+Y.',
-  },
-  {
-    group: 'Édition',
-    title: 'Vider',
-    text: "Efface l'intégralité du canevas et repart d'un projet vide.",
-  },
-  {
-    group: 'Édition',
-    title: 'Orientation LR / HB',
-    text: 'Change le sens du diagramme : gauche-droite (LR) ou haut-bas (HB).',
-  },
-  {
-    group: 'Édition',
-    title: 'Thème',
-    text: 'Bascule entre mode sombre et mode clair. La préférence est mémorisée.',
-  },
-  {
-    group: 'Panneau',
-    title: 'Documentation',
-    text: 'Décrire le projet, chaque place (description, marquage initial) et chaque transition.',
-  },
-  {
-    group: 'Panneau',
-    title: 'Exporter PDF',
-    text: 'Génère un PDF A4 : documentation du projet puis un schéma par étape de simulation.',
-  },
+const NAV_ITEMS = [
+  { id: 'hero', label: 'RDP Simulator' },
+  { id: 'structure', label: 'Structure' },
+  { id: 'features', label: 'Fonctionnalités' },
+  { id: 'cta', label: 'Modéliser' },
 ]
 
 export default function LandingPage() {
   const navigate = useNavigate()
   const currentYear = new Date().getFullYear()
+  const [activeSection, setActiveSection] = useState('hero')
+  const [guideOpen, setGuideOpen] = useState(false)
 
   const openSimulator = () => navigate('/simulator')
-  const openDemo = () => navigate('/simulator?demo=1')
+  const openSimpleDemo = () => navigate('/simulator?demo=hero')
+  const openVendingDemo = () => navigate('/simulator?demo=vending')
+
+  // Suivi de la section active pour les ancres
+  useEffect(() => {
+    const onScroll = () => {
+      const scrollY = window.scrollY + 220
+      for (const { id } of NAV_ITEMS) {
+        const el = document.getElementById(id)
+        if (!el) continue
+        const top = el.offsetTop
+        const bottom = top + el.offsetHeight
+        if (scrollY >= top && scrollY < bottom) {
+          setActiveSection(id)
+          return
+        }
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const scrollTo = (id) => {
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   return (
     <div className="landing">
       <header className="landing__nav">
-        <div className="landing__brand">
+        <button
+          type="button"
+          className="landing__brand"
+          onClick={() => scrollTo('hero')}
+          aria-label="Revenir en haut"
+        >
           <GitBranch size={22} />
           <span>RDP Simulator</span>
-        </div>
-        <div className="landing__nav-actions">
-          <button
-            type="button"
-            className="landing__nav-cta"
-            onClick={openDemo}
-          >
-            Voir la démo
-          </button>
-          <button
-            type="button"
-            className="landing__nav-cta landing__nav-cta--primary"
-            onClick={openSimulator}
-          >
-            Ouvrir le simulateur
-          </button>
-        </div>
+        </button>
+
+        <nav className="landing__nav-links" aria-label="Sections">
+          {NAV_ITEMS.slice(1).map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              className={`landing__nav-link ${
+                activeSection === id ? 'is-active' : ''
+              }`}
+              onClick={() => scrollTo(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        <button
+          type="button"
+          className="landing__nav-cta landing__nav-cta--primary"
+          onClick={openSimulator}
+        >
+          Ouvrir le simulateur
+        </button>
       </header>
 
       <main className="landing__main">
-        {/* -------- Section 1 : Hero -------- */}
-        <section className="landing__section landing__section--hero">
+        {/* ---- [1] Hero ---- */}
+        <section id="hero" className="landing__section landing__section--hero">
           <div className="landing__section-inner landing__hero">
             <div className="landing__hero-text">
               <span className="landing__eyebrow">
@@ -223,7 +189,7 @@ export default function LandingPage() {
                 <button
                   type="button"
                   className="landing__cta landing__cta--ghost"
-                  onClick={openDemo}
+                  onClick={openSimpleDemo}
                 >
                   Essayer l'exemple
                 </button>
@@ -231,107 +197,24 @@ export default function LandingPage() {
             </div>
 
             <div className="landing__hero-visual">
-              <VendingDiagram />
+              <HeroMiniDiagram />
             </div>
           </div>
         </section>
 
-        {/* -------- Section 2 : Démo -------- */}
-        <section className="landing__section landing__section--demo">
-          <div className="landing__section-inner">
-            <header className="landing__section-header">
-              <span className="landing__section-eyebrow">Démonstration</span>
-              <h2>Un exemple complet, prêt à lancer.</h2>
-              <p>
-                Un distributeur automatique de boisson avec réapprovisionnement
-                automatique : 8 places, 4 transitions, prêt à être exécuté en
-                un clic.
-              </p>
-            </header>
-
-            <div className="landing__demo-grid">
-              <div className="landing__demo-preview">
-                <VendingDiagram />
-                <div className="landing__demo-meta">
-                  <span>8 places</span>
-                  <span>4 transitions</span>
-                  <span>14 arcs</span>
-                  <span>P8 initial = 15</span>
-                </div>
-                <button
-                  type="button"
-                  className="landing__cta landing__cta--primary"
-                  onClick={openDemo}
-                >
-                  <Play size={16} />
-                  Lancer la démo
-                </button>
-              </div>
-
-              <div className="landing__demo-description">
-                <h3>Ce que fait ce réseau</h3>
-                <p>
-                  Le distributeur vend une boisson à la fois. Un client insère
-                  une pièce, la boisson est servie et un emplacement se libère.
-                  Dès que 3 emplacements sont disponibles et que le mécanisme
-                  de réapprovisionnement est libre, un cycle est déclenché et
-                  transfère 3 boissons depuis l'entrepôt central.
-                </p>
-
-                <ul className="landing__list">
-                  <li>
-                    <strong>T1</strong> — Insérer une pièce
-                  </li>
-                  <li>
-                    <strong>T2</strong> — Distribuer une boisson
-                  </li>
-                  <li>
-                    <strong>T3</strong> — Déclencher le réapprovisionnement
-                  </li>
-                  <li>
-                    <strong>T4</strong> — Terminer le réapprovisionnement
-                  </li>
-                </ul>
-
-                <p className="landing__demo-hint">
-                  La démo démarre avec un marquage initial complet et le
-                  panneau latéral déjà rempli (nom, description, tableaux des
-                  places et transitions).
-                </p>
-              </div>
-            </div>
-
-            <div className="landing__demo-info-header">
-              <h3>Guide d'utilisation</h3>
-              <p>
-                Rôle et fonctionnement de chaque bouton et de chaque section
-                de l'interface.
-              </p>
-            </div>
-
-            <div className="landing__info-grid">
-              {INFO_BOXES.map((box, i) => (
-                <InfoBox
-                  key={i}
-                  group={box.group}
-                  title={box.title}
-                  text={box.text}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* -------- Section 3 : Code -------- */}
-        <section className="landing__section landing__section--code">
-          <div className="landing__section-inner landing__code">
-            <div className="landing__code-text">
+        {/* ---- [2] Structure ---- */}
+        <section
+          id="structure"
+          className="landing__section landing__section--structure"
+        >
+          <div className="landing__section-inner landing__structure">
+            <div className="landing__structure-text">
               <span className="landing__section-eyebrow">Structure</span>
               <h2>Un modèle simple, une simulation claire.</h2>
               <p>
                 Décrivez votre réseau avec une structure minimale : des places
-                avec un marquage initial, des transitions, et des arcs
-                pondérés. Le simulateur s'occupe du reste : franchissement des
+                avec un marquage initial, des transitions, et des arcs pondérés.
+                Le simulateur s'occupe du reste : franchissement des
                 transitions, animation des jetons le long des arcs, export du
                 diagramme.
               </p>
@@ -352,22 +235,25 @@ export default function LandingPage() {
                   distributeur-rdp.js
                 </span>
               </div>
-              <pre className="code-snippet">
+              <pre className="code-snippet code-snippet--fixed">
                 <code>{DEMO_CODE}</code>
               </pre>
             </div>
           </div>
         </section>
 
-        {/* -------- Section 4 : Fonctionnalités -------- */}
-        <section className="landing__section landing__section--features">
+        {/* ---- [3] Fonctionnalités ---- */}
+        <section
+          id="features"
+          className="landing__section landing__section--features"
+        >
           <div className="landing__section-inner">
-            <header className="landing__section-header">
+            <header className="landing__section-header landing__section-header--center">
               <span className="landing__section-eyebrow">Fonctionnalités</span>
               <h2>Tout ce qu'il faut pour un RDP</h2>
               <p>
-                Un éditeur et un simulateur complets, sans dépendance ni
-                service externe.
+                Un éditeur et un simulateur complets, sans dépendance ni service
+                externe.
               </p>
             </header>
 
@@ -388,8 +274,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* -------- Section 5 : CTA -------- */}
-        <section className="landing__section landing__section--cta">
+        {/* ---- [4] CTA ---- */}
+        <section id="cta" className="landing__section landing__section--cta">
           <div className="landing__section-inner landing__cta-block">
             <h2>Prêt à modéliser ?</h2>
             <p>
@@ -407,10 +293,19 @@ export default function LandingPage() {
               </button>
               <button
                 type="button"
-                className="landing__cta landing__cta--ghost"
-                onClick={openDemo}
+                className="landing__cta landing__cta--primary"
+                onClick={openVendingDemo}
               >
-                Charger l'exemple
+                <Play size={16} />
+                Lancer la démo
+              </button>
+              <button
+                type="button"
+                className="landing__cta landing__cta--ghost"
+                onClick={() => setGuideOpen(true)}
+              >
+                <BookOpen size={16} />
+                Guide d'utilisation
               </button>
             </div>
           </div>
@@ -423,6 +318,8 @@ export default function LandingPage() {
           v{APP_VERSION} · {currentYear} · Tous droits réservés
         </span>
       </footer>
+
+      {guideOpen && <GuideModal onClose={() => setGuideOpen(false)} />}
     </div>
   )
 }
