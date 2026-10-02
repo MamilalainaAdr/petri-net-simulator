@@ -21,6 +21,7 @@ import {
   ArrowUpDown,
   Sun,
   Moon,
+  HelpCircle,
 } from 'lucide-react'
 
 const MODES = [
@@ -58,6 +59,7 @@ export default function Toolbar({
   onThemeToggle,
   animDuration,
   onAnimDurationChange,
+  onShowGuide,
 }) {
   const navigate = useNavigate()
   const ThemeIcon = theme === 'dark' ? Sun : Moon
@@ -265,6 +267,16 @@ export default function Toolbar({
             }
           >
             <ThemeIcon size={16} />
+          </button>
+
+          <button
+            type="button"
+            className="btn btn--icon btn--help"
+            onClick={onShowGuide}
+            data-tooltip="Afficher le guide pas à pas"
+            aria-label="Afficher le guide pas à pas"
+          >
+            <HelpCircle size={16} />
           </button>
         </div>
       </fieldset>

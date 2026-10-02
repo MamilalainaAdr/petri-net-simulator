@@ -854,6 +854,7 @@ function Simulator({ theme, onThemeToggle }) {
         onThemeToggle={onThemeToggle}
         animDuration={animDuration}
         onAnimDurationChange={setAnimDuration}
+        onShowGuide={() => setShowOnboarding(true)}
       />
 
       <div className="app__body">
