@@ -1,7 +1,11 @@
 /* ==================================================================
    1. PALETTE & THÈMES
-   Palette osée : vert sauge, jaune, mauve, violet, gris chaud, noir.
-   Violet #8254ee remplace le bleu historique.
+   Répartition des couleurs :
+     - Violet #8254ee : identité (marque, CTA primaire, focus, actifs)
+     - Or     #e7c965 : jetons, actions "play", étape, highlights
+     - Sauge  #c1cfc1 : succès, états actifs, séparateurs doux
+     - Mauve  #82717b : structure (noeuds, arcs, labels)
+     - Gris chaud + noir : fonds
    ================================================================== */
 
 :root,
@@ -21,7 +25,7 @@
   --muted: #9c908a;
   --text-soft: #c1cfc1;
 
-  /* Accent principal : violet */
+  /* Accent principal : violet (identité) */
   --accent: #8254ee;
   --accent-soft: rgba(130, 84, 238, 0.18);
   --accent-strong: #9d78f5;
@@ -32,12 +36,13 @@
   --sage: #c1cfc1;
   --sage-soft: rgba(193, 207, 193, 0.14);
   --mauve: #82717b;
+  --mauve-soft: rgba(130, 113, 123, 0.22);
 
-  /* Sémantiques */
+  /* Sémantiques — répartis pour éviter la surcharge violette */
   --success: #7dc99a;
   --success-soft: rgba(125, 201, 154, 0.16);
-  --info: #8254ee;
-  --info-soft: rgba(130, 84, 238, 0.16);
+  --info: #e7c965;               /* était violet, maintenant or */
+  --info-soft: rgba(231, 201, 101, 0.16);
   --warning: #e7c965;
   --warning-soft: rgba(231, 201, 101, 0.16);
   --danger: #e06c75;
@@ -50,7 +55,7 @@
   --transition-fill: #3b353c;
   --transition-stroke: #82717b;
   --transition-stroke-enabled: #c1cfc1;
-  --transition-stroke-fired: #9d78f5;
+  --transition-stroke-fired: #e7c965;   /* était violet, maintenant or */
   --arc-stroke: #82717b;
   --btn-active-text: #f1ede8;
 
@@ -80,7 +85,7 @@
              linear-gradient(160deg, #090909 0%, #121012 55%, #0f0b12 100%);
   --structure-bg: radial-gradient(circle at 80% 15%, rgba(193, 207, 193, 0.12), transparent 45%),
                   linear-gradient(180deg, #0f0b12 0%, #090909 100%);
-  --features-bg: radial-gradient(circle at 20% 80%, rgba(130, 84, 238, 0.16), transparent 50%),
+  --features-bg: radial-gradient(circle at 20% 80%, rgba(231, 201, 101, 0.14), transparent 50%),
                  linear-gradient(180deg, #090909 0%, #121012 100%);
   --cta-bg: radial-gradient(circle at 50% 30%, rgba(130, 84, 238, 0.28), transparent 55%),
             radial-gradient(circle at 80% 90%, rgba(231, 201, 101, 0.12), transparent 50%),
@@ -106,15 +111,16 @@
   --accent-strong: #6b3dd8;
 
   --gold: #b8942f;
-  --gold-soft: rgba(231, 201, 101, 0.22);
+  --gold-soft: rgba(231, 201, 101, 0.28);
   --sage: #7a8a7a;
-  --sage-soft: rgba(193, 207, 193, 0.4);
+  --sage-soft: rgba(193, 207, 193, 0.45);
   --mauve: #82717b;
+  --mauve-soft: rgba(130, 113, 123, 0.18);
 
   --success: #3d8a5f;
   --success-soft: rgba(61, 138, 95, 0.14);
-  --info: #8254ee;
-  --info-soft: rgba(130, 84, 238, 0.12);
+  --info: #b8942f;
+  --info-soft: rgba(184, 148, 47, 0.16);
   --warning: #b8942f;
   --warning-soft: rgba(184, 148, 47, 0.14);
   --danger: #c14a53;
@@ -126,7 +132,7 @@
   --transition-fill: #3b353c;
   --transition-stroke: #3b353c;
   --transition-stroke-enabled: #7dc99a;
-  --transition-stroke-fired: #8254ee;
+  --transition-stroke-fired: #b8942f;
   --arc-stroke: #82717b;
   --btn-active-text: #23202a;
 
@@ -150,7 +156,7 @@
              linear-gradient(160deg, #f5f4f7 0%, #eef1ed 55%, #f0eaf5 100%);
   --structure-bg: radial-gradient(circle at 80% 15%, rgba(193, 207, 193, 0.35), transparent 45%),
                   linear-gradient(180deg, #f0eaf5 0%, #eef1ed 100%);
-  --features-bg: radial-gradient(circle at 20% 80%, rgba(130, 84, 238, 0.12), transparent 50%),
+  --features-bg: radial-gradient(circle at 20% 80%, rgba(231, 201, 101, 0.22), transparent 50%),
                  linear-gradient(180deg, #eef1ed 0%, #f5f4f7 100%);
   --cta-bg: radial-gradient(circle at 50% 30%, rgba(130, 84, 238, 0.22), transparent 55%),
             radial-gradient(circle at 80% 90%, rgba(231, 201, 101, 0.18), transparent 50%),
@@ -174,7 +180,7 @@ body {
 }
 
 /* ==================================================================
-   2. GLASSMORPHISM — classes utilitaires réutilisables
+   2. GLASSMORPHISM — utilitaire
    ================================================================== */
 
 .glass {
@@ -445,7 +451,7 @@ body {
 .btn--success { color: var(--success); border-color: rgba(125, 201, 154, 0.4); }
 .btn--success:hover:not(:disabled) { background: var(--success-soft); border-color: var(--success); }
 
-.btn--info { color: var(--info); border-color: rgba(130, 84, 238, 0.4); }
+.btn--info { color: var(--info); border-color: rgba(231, 201, 101, 0.4); }
 .btn--info:hover:not(:disabled) { background: var(--info-soft); border-color: var(--info); }
 
 .btn--warning { color: var(--warning); border-color: rgba(231, 201, 101, 0.4); }
@@ -454,7 +460,7 @@ body {
 .btn--danger { color: var(--danger); border-color: rgba(224, 108, 117, 0.4); }
 .btn--danger:hover:not(:disabled) { background: var(--danger-soft); border-color: var(--danger); }
 
-/* ---------------- Playground (arrière-plan type Mermaid) ---------------- */
+/* ---------------- Playground ---------------- */
 
 .playground {
   flex: 1 1 auto;
@@ -489,7 +495,6 @@ body {
 .playground__svg.mode-token { cursor: pointer; }
 .playground__svg.mode-delete { cursor: not-allowed; }
 
-/* Le rect du fond SVG devient transparent pour laisser voir le dot grid */
 .playground__bg {
   fill: transparent;
   transition: fill 0.15s;
@@ -699,8 +704,8 @@ body {
 }
 
 .sidebar-export:hover:not(:disabled) {
-  background: var(--accent-soft);
-  border-color: var(--accent);
+  background: var(--sage-soft);
+  border-color: var(--sage);
   color: var(--btn-active-text);
 }
 
@@ -914,7 +919,7 @@ body {
 .statusbar__progress-fill {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-strong));
+  background: linear-gradient(90deg, var(--accent), var(--sage));
   border-radius: 6px;
   transition: width 0.25s ease;
 }
@@ -927,7 +932,7 @@ body {
   text-align: right;
 }
 
-/* ---------------- Modale (glass) ---------------- */
+/* ---------------- Modale ---------------- */
 
 .modal__backdrop {
   position: fixed;
@@ -998,7 +1003,7 @@ body {
 }
 
 /* ==================================================================
-   4. ONBOARDING TOUR (spotlight + card centrée)
+   4. ONBOARDING TOUR
    ================================================================== */
 
 .onboarding {
@@ -1227,9 +1232,9 @@ body {
 }
 
 .landing__nav-theme:hover {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: var(--accent);
+  background: var(--gold-soft);
+  color: var(--gold);
+  border-color: var(--gold);
   transform: translateY(-1px);
 }
 
@@ -1239,7 +1244,6 @@ body {
   flex-direction: column;
 }
 
-/* Chaque section occupe tout l'écran + dot grid en surimpression */
 .landing__section {
   min-height: 100vh;
   width: 100%;
@@ -1289,17 +1293,28 @@ body {
   max-width: 720px;
 }
 
+/* Eyebrow : couleur par section */
 .landing__section-eyebrow {
   display: inline-block;
   padding: 5px 14px;
   border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   backdrop-filter: blur(6px);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.landing__section--structure .landing__section-eyebrow {
+  background: var(--sage-soft);
+  color: var(--sage);
+}
+
+.landing__section--features .landing__section-eyebrow {
+  background: var(--gold-soft);
+  color: var(--gold);
 }
 
 /* -- [1] Hero -- */
@@ -1343,6 +1358,7 @@ body {
   max-width: 540px;
 }
 
+/* Carte du diagramme héro : animation hover légère */
 .landing__hero-visual {
   display: flex;
   align-items: center;
@@ -1354,6 +1370,19 @@ body {
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease,
+    box-shadow 0.4s ease;
+  will-change: transform;
+}
+
+.landing__hero-visual:hover {
+  transform: translateY(-6px) scale(1.015);
+  border-color: rgba(193, 207, 193, 0.45);
+  box-shadow:
+    0 24px 60px rgba(193, 207, 193, 0.2),
+    0 12px 36px rgba(0, 0, 0, 0.45);
 }
 
 .landing__actions {
@@ -1362,6 +1391,23 @@ body {
   flex-wrap: wrap;
 }
 .landing__actions--center { justify-content: center; }
+
+/* Layout section 4 : deux groupes séparés */
+.landing__actions--split {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.landing__actions-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
 
 .landing__cta {
   display: inline-flex;
@@ -1373,9 +1419,13 @@ body {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, transform 0.12s,
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.12s,
     box-shadow 0.2s;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .landing__cta:hover {
@@ -1395,15 +1445,27 @@ body {
   border-color: var(--accent-strong);
 }
 
+/* Bouton "ghost" — glass blanc visible en dark mode */
 .landing__cta--ghost {
-  background: var(--glass-bg);
+  background: rgba(255, 255, 255, 0.12);
   color: var(--text);
-  border-color: var(--glass-border);
-  backdrop-filter: blur(10px);
+  border-color: rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-theme='light'] .landing__cta--ghost {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(59, 53, 60, 0.14);
 }
 
 .landing__cta--ghost:hover {
-  background: var(--glass-bg-strong);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--sage);
+}
+
+[data-theme='light'] .landing__cta--ghost:hover {
+  background: rgba(255, 255, 255, 0.95);
   border-color: var(--accent);
 }
 
@@ -1441,6 +1503,7 @@ body {
 
 .landing__list li strong { color: var(--text); font-weight: 600; }
 
+/* Fenêtre de code : animation hover légère */
 .landing__code-window {
   background: rgba(15, 11, 18, 0.85);
   backdrop-filter: var(--glass-blur);
@@ -1449,6 +1512,19 @@ body {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: var(--glass-shadow);
+  transition:
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease,
+    box-shadow 0.4s ease;
+  will-change: transform;
+}
+
+.landing__code-window:hover {
+  transform: translateY(-6px);
+  border-color: rgba(231, 201, 101, 0.45);
+  box-shadow:
+    0 24px 60px rgba(231, 201, 101, 0.15),
+    0 12px 36px rgba(0, 0, 0, 0.45);
 }
 
 .landing__code-bar {
@@ -1505,10 +1581,14 @@ body {
 }
 
 .landing__feature:hover {
-  border-color: var(--accent);
   transform: translateY(-4px);
-  box-shadow: 0 18px 42px rgba(130, 84, 238, 0.22);
+  box-shadow: 0 18px 42px rgba(130, 84, 238, 0.18);
 }
+
+.landing__feature:nth-child(1):hover { border-color: var(--accent); }
+.landing__feature:nth-child(2):hover { border-color: var(--gold); }
+.landing__feature:nth-child(3):hover { border-color: var(--sage); }
+.landing__feature:nth-child(4):hover { border-color: var(--mauve); }
 
 .landing__feature-icon {
   display: inline-flex;
@@ -1517,10 +1597,26 @@ body {
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: var(--accent-soft);
-  color: var(--accent);
   margin-bottom: 16px;
   backdrop-filter: blur(6px);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Couleurs variées par carte */
+.landing__feature:nth-child(2) .landing__feature-icon {
+  background: var(--gold-soft);
+  color: var(--gold);
+}
+
+.landing__feature:nth-child(3) .landing__feature-icon {
+  background: var(--sage-soft);
+  color: var(--sage);
+}
+
+.landing__feature:nth-child(4) .landing__feature-icon {
+  background: var(--mauve-soft);
+  color: var(--mauve);
 }
 
 .landing__feature h3 {
@@ -1541,9 +1637,9 @@ body {
 
 .landing__cta-block {
   text-align: center;
-  max-width: 760px;
+  max-width: 860px;
   margin: 0 auto;
-  padding: 48px 32px;
+  padding: 48px 40px;
   border-radius: 24px;
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
@@ -1717,6 +1813,10 @@ body {
   color: var(--accent);
 }
 
+.guide-modal__section:nth-child(2) h3 { color: var(--sage); }
+.guide-modal__section:nth-child(3) h3 { color: var(--gold); }
+.guide-modal__section:nth-child(4) h3 { color: var(--mauve); }
+
 .guide-modal__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1751,6 +1851,21 @@ body {
   flex: 0 0 auto;
 }
 
+.guide-modal__section:nth-child(2) .guide-modal__item-icon {
+  background: var(--sage-soft);
+  color: var(--sage);
+}
+
+.guide-modal__section:nth-child(3) .guide-modal__item-icon {
+  background: var(--gold-soft);
+  color: var(--gold);
+}
+
+.guide-modal__section:nth-child(4) .guide-modal__item-icon {
+  background: var(--mauve-soft);
+  color: var(--mauve);
+}
+
 .guide-modal__item-body h4 {
   margin: 0 0 3px;
   font-size: 13px;
@@ -1779,6 +1894,12 @@ body {
   .landing__features-grid { grid-template-columns: repeat(2, 1fr); }
   .guide-modal__grid { grid-template-columns: 1fr; }
   .landing__nav-links { display: none; }
+
+  .landing__actions--split {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .landing__actions-group { justify-content: center; }
 }
 
 @media (max-width: 640px) {

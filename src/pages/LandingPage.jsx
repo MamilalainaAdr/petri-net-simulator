@@ -74,7 +74,6 @@ export default function LandingPage({ theme, onThemeToggle }) {
   const [guideOpen, setGuideOpen] = useState(false)
 
   const openSimulator = () => navigate('/simulator')
-  const openSimpleDemo = () => navigate('/simulator?demo=hero')
   const openVendingDemo = () => navigate('/simulator?demo=vending')
 
   const ThemeIcon = theme === 'dark' ? Sun : Moon
@@ -139,7 +138,6 @@ export default function LandingPage({ theme, onThemeToggle }) {
           Ouvrir le simulateur
         </button>
 
-        {/* Bouton thème placé à droite du CTA */}
         <button
           type="button"
           className="landing__nav-theme"
@@ -277,30 +275,36 @@ export default function LandingPage({ theme, onThemeToggle }) {
               Ouvrez le simulateur et construisez votre premier réseau — ou
               démarrez directement sur l'exemple du distributeur.
             </p>
-            <div className="landing__actions landing__actions--center">
-              <button
-                type="button"
-                className="landing__cta landing__cta--primary"
-                onClick={openSimulator}
-              >
-                <Play size={16} />
-                Ouvrir le simulateur
-              </button>
-              <button
-                type="button"
-                className="landing__cta landing__cta--primary"
-                onClick={openVendingDemo}
-              >
-                Lancer la démo
-              </button>
-              <button
-                type="button"
-                className="landing__cta landing__cta--ghost"
-                onClick={() => setGuideOpen(true)}
-              >
-                <BookOpen size={16} />
-                Documentation
-              </button>
+
+            <div className="landing__actions landing__actions--split">
+              <div className="landing__actions-group">
+                <button
+                  type="button"
+                  className="landing__cta landing__cta--primary"
+                  onClick={openSimulator}
+                >
+                  <Play size={16} />
+                  Ouvrir le simulateur
+                </button>
+                <button
+                  type="button"
+                  className="landing__cta landing__cta--ghost"
+                  onClick={openVendingDemo}
+                >
+                  Lancer la démo
+                </button>
+              </div>
+
+              <div className="landing__actions-group">
+                <button
+                  type="button"
+                  className="landing__cta landing__cta--ghost"
+                  onClick={() => setGuideOpen(true)}
+                >
+                  <BookOpen size={16} />
+                  Documentation
+                </button>
+              </div>
             </div>
           </div>
         </section>
