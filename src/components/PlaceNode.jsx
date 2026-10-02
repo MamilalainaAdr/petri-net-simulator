@@ -49,6 +49,7 @@ function Tokens({ place }) {
 
 export default function PlaceNode({
   place,
+  hiddenTokens = 0,
   mode,
   isArcSource,
   onPointerDown,
@@ -57,6 +58,17 @@ export default function PlaceNode({
 }) {
   const classes = ['node', 'node--place']
   if (isArcSource) classes.push('is-source')
+
+  // Pendant une animation, les jetons en transit sur les arcs ne doivent
+  // pas être comptés dans la place de destination tant qu'ils ne sont pas
+  // arrivés. On masque donc temporairement ces jetons côté affichage.
+  // Cas particulier du marquage infini (« n ») : on ignore le masque pour
+  // éviter tout artefact d'affichage.
+  const effectiveTokens = isInfiniteMarking(place.initialTokens)
+    ? place.tokens
+    : Math.max(0, (place.tokens ?? 0) - hiddenTokens)
+
+  const visiblePlace = { ...place, tokens: effectiveTokens }
 
   return (
     <g
@@ -68,7 +80,7 @@ export default function PlaceNode({
       onPointerUp={onPointerUp}
     >
       <circle r={PLACE_RADIUS} className="place__circle" />
-      <Tokens place={place} />
+      <Tokens place={visiblePlace} />
       <text y={PLACE_RADIUS + 18} textAnchor="middle" className="node__label">
         {place.label}
       </text>

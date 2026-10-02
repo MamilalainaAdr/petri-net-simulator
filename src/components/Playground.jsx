@@ -49,6 +49,19 @@ export default function Playground({
     return map
   }, [places, transitions])
 
+  // Jetons actuellement en transit sur les arcs (phase 2 de l'animation) :
+  // ils ne doivent pas encore apparaître dans leur place de destination.
+  const pendingByPlace = useMemo(() => {
+    if (!activeAnimation) return {}
+    const map = {}
+    activeAnimation.output.forEach((entry) => {
+      if (!entry?.place) return
+      const id = entry.place.id
+      map[id] = (map[id] || 0) + (entry.weight ?? 1)
+    })
+    return map
+  }, [activeAnimation])
+
   const pointFromEvent = (e) => {
     const rect = svgRef.current.getBoundingClientRect()
     return {
@@ -312,6 +325,7 @@ export default function Playground({
               <PlaceNode
                 key={place.id}
                 place={place}
+                hiddenTokens={pendingByPlace[place.id] || 0}
                 mode={mode}
                 isArcSource={arcSource?.id === place.id}
                 onPointerDown={handleNodePointerDown}
