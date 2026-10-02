@@ -52,9 +52,21 @@ export const HERO_PROJECT = {
 
 /**
  * Distributeur automatique de boisson — layout aligné sur le PDF de
- * référence : flux vertical principal P1 -> T1 -> P2 -> T2 -> P4 -> T3 ->
- * P7 -> T4, avec places latérales P3 / P5 à droite de T2, P6 à gauche de
- * T3, P8 à droite de T4, et arcs de bouclage (T2 -> P1, T4 -> P3, T4 -> P6).
+ * référence :
+ *
+ *   Chaîne verticale principale :
+ *     P1 -> T1 -> P2 -> T2 -> P4 -> T3 -> P7 -> T4
+ *
+ *   Places latérales :
+ *     P3 (droite de T2, au-dessus)
+ *     P5 (droite de T2, en-dessous)
+ *     P6 (gauche de T3)
+ *     P8 (droite de T4)
+ *
+ *   Arcs de bouclage :
+ *     T2 -> P1 (grande courbe à gauche)
+ *     T4 -> P6 (courbe à gauche)
+ *     T4 -> P3 (grande courbe à droite)
  */
 export const DEMO_PROJECT = {
   project: {
@@ -64,20 +76,23 @@ export const DEMO_PROJECT = {
   },
   orientation: 'TB',
   places: [
-    { id: 'p1', type: 'place', x: 400, y: 60, label: 'P1', description: 'Distributeur_Disponible', tokens: 1, initialTokens: 1 },
-    { id: 'p2', type: 'place', x: 400, y: 200, label: 'P2', description: 'Pièce_Insérée', tokens: 0, initialTokens: 0 },
-    { id: 'p3', type: 'place', x: 620, y: 240, label: 'P3', description: 'Stock_Distributeur', tokens: 5, initialTokens: 5 },
-    { id: 'p4', type: 'place', x: 400, y: 350, label: 'P4', description: 'Emplacement_Libre', tokens: 0, initialTokens: 0 },
-    { id: 'p5', type: 'place', x: 620, y: 320, label: 'P5', description: 'Boisson_Servie', tokens: 0, initialTokens: 0 },
-    { id: 'p6', type: 'place', x: 180, y: 420, label: 'P6', description: 'Réappro_Disponible', tokens: 1, initialTokens: 1 },
-    { id: 'p7', type: 'place', x: 400, y: 490, label: 'P7', description: 'Réappro_En_Cours', tokens: 0, initialTokens: 0 },
-    { id: 'p8', type: 'place', x: 620, y: 560, label: 'P8', description: 'Stock_Entrepôt', tokens: 15, initialTokens: 15 },
+    // Chaîne verticale principale (x = 400)
+    { id: 'p1', type: 'place', x: 400, y: 80, label: 'P1', description: 'Distributeur_Disponible', tokens: 1, initialTokens: 1 },
+    { id: 'p2', type: 'place', x: 400, y: 300, label: 'P2', description: 'Pièce_Insérée', tokens: 0, initialTokens: 0 },
+    { id: 'p4', type: 'place', x: 400, y: 540, label: 'P4', description: 'Emplacement_Libre', tokens: 0, initialTokens: 0 },
+    { id: 'p7', type: 'place', x: 400, y: 780, label: 'P7', description: 'Réappro_En_Cours', tokens: 0, initialTokens: 0 },
+
+    // Places latérales
+    { id: 'p3', type: 'place', x: 640, y: 380, label: 'P3', description: 'Stock_Distributeur', tokens: 5, initialTokens: 5 },
+    { id: 'p5', type: 'place', x: 640, y: 480, label: 'P5', description: 'Boisson_Servie', tokens: 0, initialTokens: 0 },
+    { id: 'p6', type: 'place', x: 160, y: 700, label: 'P6', description: 'Réappro_Disponible', tokens: 1, initialTokens: 1 },
+    { id: 'p8', type: 'place', x: 640, y: 900, label: 'P8', description: 'Stock_Entrepôt', tokens: 15, initialTokens: 15 },
   ],
   transitions: [
-    { id: 't1', type: 'transition', x: 400, y: 130, label: 'T1', description: 'Insérer_Pièce' },
-    { id: 't2', type: 'transition', x: 400, y: 280, label: 'T2', description: 'Distribuer_Boisson' },
-    { id: 't3', type: 'transition', x: 400, y: 420, label: 'T3', description: 'Déclencher_Réapprovisionnement' },
-    { id: 't4', type: 'transition', x: 400, y: 560, label: 'T4', description: 'Terminer_Réapprovisionnement' },
+    { id: 't1', type: 'transition', x: 400, y: 180, label: 'T1', description: 'Insérer_Pièce' },
+    { id: 't2', type: 'transition', x: 400, y: 420, label: 'T2', description: 'Distribuer_Boisson' },
+    { id: 't3', type: 'transition', x: 400, y: 660, label: 'T3', description: 'Déclencher_Réapprovisionnement' },
+    { id: 't4', type: 'transition', x: 400, y: 900, label: 'T4', description: 'Terminer_Réapprovisionnement' },
   ],
   arcs: [
     // Flux vertical principal
@@ -89,21 +104,20 @@ export const DEMO_PROJECT = {
     { id: 'a6', from: 't3', to: 'p7', weight: 1, bend: 0 },
     { id: 'a7', from: 'p7', to: 't4', weight: 1, bend: 0 },
 
-    // Arcs latéraux T2
+    // Latérales T2
     { id: 'a8', from: 'p3', to: 't2', weight: 1, bend: 0 },
     { id: 'a9', from: 't2', to: 'p5', weight: 1, bend: 0 },
-    // Bouclage T2 -> P1 (grande courbe à gauche)
-    { id: 'a10', from: 't2', to: 'p1', weight: 1, bend: -260 },
 
-    // Arc latéral T3 (entrée P6)
+    // Bouclage T2 -> P1 (grande courbe à gauche)
+    { id: 'a10', from: 't2', to: 'p1', weight: 1, bend: -320 },
+
+    // Latérales T3
     { id: 'a11', from: 'p6', to: 't3', weight: 1, bend: 0 },
 
-    // Arcs latéraux T4
+    // Latérales T4
     { id: 'a12', from: 'p8', to: 't4', weight: 3, bend: 0 },
-    // T4 -> P6 (courbe à gauche)
     { id: 'a13', from: 't4', to: 'p6', weight: 1, bend: -140 },
-    // T4 -> P3 (grande courbe à droite)
-    { id: 'a14', from: 't4', to: 'p3', weight: 3, bend: 220 },
+    { id: 'a14', from: 't4', to: 'p3', weight: 3, bend: 320 },
   ],
 }
 

@@ -9,8 +9,10 @@ import {
   Code,
   Sun,
   Moon,
+  BookOpen,
 } from 'lucide-react'
 import HeroMiniDiagram from '../components/HeroMiniDiagram'
+import GuideModal from '../components/GuideModal'
 
 const APP_VERSION = '1.0'
 
@@ -69,6 +71,7 @@ export default function LandingPage({ theme, onThemeToggle }) {
   const navigate = useNavigate()
   const currentYear = new Date().getFullYear()
   const [activeSection, setActiveSection] = useState('hero')
+  const [guideOpen, setGuideOpen] = useState(false)
 
   const openSimulator = () => navigate('/simulator')
   const openSimpleDemo = () => navigate('/simulator?demo=hero')
@@ -130,6 +133,15 @@ export default function LandingPage({ theme, onThemeToggle }) {
 
         <button
           type="button"
+          className="landing__nav-cta landing__nav-cta--primary"
+          onClick={openSimulator}
+        >
+          Ouvrir le simulateur
+        </button>
+
+        {/* Bouton thème placé à droite du CTA */}
+        <button
+          type="button"
           className="landing__nav-theme"
           onClick={onThemeToggle}
           title={
@@ -140,14 +152,6 @@ export default function LandingPage({ theme, onThemeToggle }) {
           }
         >
           <ThemeIcon size={18} />
-        </button>
-
-        <button
-          type="button"
-          className="landing__nav-cta landing__nav-cta--primary"
-          onClick={openSimulator}
-        >
-          Ouvrir le simulateur
         </button>
       </header>
 
@@ -182,9 +186,9 @@ export default function LandingPage({ theme, onThemeToggle }) {
                 <button
                   type="button"
                   className="landing__cta landing__cta--ghost"
-                  onClick={openSimpleDemo}
+                  onClick={openVendingDemo}
                 >
-                  Essayer l'exemple
+                  Voir la démo
                 </button>
               </div>
             </div>
@@ -287,8 +291,15 @@ export default function LandingPage({ theme, onThemeToggle }) {
                 className="landing__cta landing__cta--primary"
                 onClick={openVendingDemo}
               >
-                <Play size={16} />
                 Lancer la démo
+              </button>
+              <button
+                type="button"
+                className="landing__cta landing__cta--ghost"
+                onClick={() => setGuideOpen(true)}
+              >
+                <BookOpen size={16} />
+                Documentation
               </button>
             </div>
           </div>
@@ -301,6 +312,8 @@ export default function LandingPage({ theme, onThemeToggle }) {
           v{APP_VERSION} · {currentYear} · Tous droits réservés
         </span>
       </footer>
+
+      {guideOpen && <GuideModal onClose={() => setGuideOpen(false)} />}
     </div>
   )
 }

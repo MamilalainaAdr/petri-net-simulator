@@ -6,7 +6,6 @@ import {
   CircleDot,
   Trash2,
   Play,
-  Pause,
   StepForward,
   RotateCcw,
   Eraser,
