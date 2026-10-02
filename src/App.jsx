@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar'
 import Modal from './components/Modal'
 import Tooltip from './components/Tooltip'
 import LandingPage from './pages/LandingPage'
+import { DEMO_PROJECT } from './data/demoProject'
 import {
   createId,
   fireTransition,
@@ -149,6 +150,21 @@ export default function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
+
+  // --------- Chargement du projet de démonstration ---------
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('demo') === '1') {
+      // Copie profonde pour ne pas muter la constante
+      const demoDoc = JSON.parse(JSON.stringify(DEMO_PROJECT))
+      docRef.current = demoDoc
+      setState({ doc: demoDoc, past: [], future: [] })
+      setMessage('Projet de démonstration chargé')
+      // Nettoie l'URL
+      window.history.replaceState({}, '', '/simulator')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const enabledTransitions = useMemo(
     () => getEnabledTransitions(transitions, arcs, places),
@@ -302,12 +318,6 @@ export default function App() {
     return tokens
   }
 
-  /**
-   * Construit les données d'animation à partir d'une transition et du
-   * document courant. Inclut la géométrie complète de chaque arc
-   * (points de départ, de contrôle et d'arrivée) pour permettre
-   * l'animation le long de la courbe réelle.
-   */
   const buildAnimation = useCallback(
     (transition, currentDoc) => {
       const inputs = currentDoc.arcs
@@ -397,11 +407,7 @@ export default function App() {
         ...states,
         { tokens: snapshotTokens(newDoc.places), firedId: t.id },
       ]
-      return {
-        ...s,
-        states,
-        index: index + 1,
-      }
+      return { ...s, states, index: index + 1 }
     })
     return true
   }, [fireTransitionWithAnimation])
